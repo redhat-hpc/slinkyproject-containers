@@ -50,7 +50,7 @@ build:
     - docker buildx bake --print $BAKE_TARGET
     - docker buildx bake --progress=plain $BAKE_TARGET
   rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-.*/
       changes:
         - \'schedmd/slurm/**/*\'
 
@@ -64,7 +64,7 @@ push:
     - docker buildx bake --print $BAKE_TARGET
     - docker buildx bake --progress=plain --push $BAKE_TARGET
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-.*/
       changes:
         - \'schedmd/slurm/**/*\'
 
