@@ -84,4 +84,6 @@ release:
       for daemon in slurmctld slurmd slurmdbd slurmrestd sackd ; do
         ./scripts/build.sh --registry=$DOCKER_SOURCE_REGISTRY --new-registry=$DOCKER_TARGET_REGISTRY --target=$daemon --slurm-version=$VERSION --pull --no-build --push ./schedmd/slurm/$FLAVOR ;
       done
-  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-.*/
+      when: manual
