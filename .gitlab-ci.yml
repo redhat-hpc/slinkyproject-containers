@@ -50,7 +50,7 @@ build:
     - docker buildx bake --print $BAKE_TARGET
     - docker buildx bake --progress=plain $BAKE_TARGET
   rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-.*/
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
         - schedmd/slurm/$VERSION/$FLAVOR/*
 
@@ -64,7 +64,7 @@ push:
     - docker buildx bake --print $BAKE_TARGET
     - docker buildx bake --progress=plain --push $BAKE_TARGET
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-.*/
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - schedmd/slurm/$VERSION/$FLAVOR/*
 
@@ -88,5 +88,5 @@ release:
         docker push "${DOCKER_TARGET_REGISTRY}/${image}"
       done
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-.*/
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
