@@ -9,7 +9,7 @@ FROM ${PARENT_IMAGE} AS build
 USER root
 WORKDIR /tmp/
 
-COPY patches/ /tmp/patches/
+COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
 ARG SLURM_VERSION="master"
