@@ -18,7 +18,7 @@ dnf -q config-manager --enable crb
 # For: ./scripts/
 dnf -q -y install --setopt='install_weak_deps=False' \
   curl-minimal jq
-  dnf clean all
+dnf clean all
 EOR
 
 COPY scripts/ /tmp/scripts/
@@ -102,7 +102,7 @@ COPY --from=build /usr/local/bin/kubectl /usr/local/bin/kubectl
 
 ################################################################################
 # SLURM: slurmctld
-# BUILD: `docker build --target=slurmctld -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
 ################################################################################
 FROM base AS slurmctld
 
@@ -134,7 +134,7 @@ CMD ["-D"]
 
 ################################################################################
 # SLURM: slurmd
-# BUILD: `docker build --target=slurmd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base AS slurmd
 
@@ -169,7 +169,7 @@ CMD ["-D"]
 
 ################################################################################
 # SLURM: slurmdbd
-# BUILD: `docker build --target=slurmdbd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmdbd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base AS slurmdbd
 
@@ -201,7 +201,7 @@ CMD ["-D"]
 
 ################################################################################
 # SLURM: slurmrestd
-# BUILD: `docker build --target=slurmrestd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmrestd -t [<registry>/]slurmrestd:<tag> .`
 ################################################################################
 FROM base AS slurmrestd
 
@@ -233,7 +233,7 @@ CMD ["0.0.0.0:6820"]
 
 ################################################################################
 # SLURM: sackd
-# BUILD: `docker build --target=sackd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
 FROM base AS sackd
 
@@ -264,7 +264,7 @@ ENTRYPOINT ["sackd"]
 
 ################################################################################
 # SLURM: slurm
-# BUILD: `docker build --target=slurm -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurm -t [<registry>/]slurm:<tag> .`
 ################################################################################
 FROM base AS slurm
 

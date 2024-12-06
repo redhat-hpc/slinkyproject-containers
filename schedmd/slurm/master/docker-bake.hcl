@@ -9,6 +9,10 @@ variable "DOCKER_BAKE_DEBUG_IMAGE" {
   default = "0"
 }
 
+variable "SLURM_VERSION" {
+  default = "master"
+}
+
 function "format_name" {
   params = [stage, version, flavor]
   // Remove [:punct:] from string before joining elements
@@ -26,10 +30,10 @@ group "default" {
 }
 
 target "_default" {
-  name = format_name("${stage}", "${version}", "${flavor}")
+  name = format_name("${stage}", "${SLURM_VERSION}", "${flavor}")
   context = "${flavor}/"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "${stage}", "${version}", "${flavor}", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${DOCKER_BAKE_REGISTRY}", "${stage}", "${SLURM_VERSION}", "${flavor}", "${DOCKER_BAKE_SUFFIX}"),
   ]
   matrix = {
     stage = [
@@ -38,10 +42,6 @@ target "_default" {
       "slurmdbd",
       "slurmrestd",
       "sackd",
-    ]
-    version = [
-      "master",
-      "24.05",
     ]
     flavor = [
       "rockylinux-9",
@@ -50,41 +50,13 @@ target "_default" {
   }
   args = {
     DEBUG = "${DOCKER_BAKE_DEBUG_IMAGE}"
-    SLURM_VERSION = "${version}"
+    SLURM_VERSION = "${SLURM_VERSION}"
   }
   target = stage
 }
 
-group "master" {
-  targets = [
-    "master_rockylinux9",
-    "master_ubuntu2404",
-  ]
-}
-
-group "2405" {
-  targets = [
-    "2405_rockylinux9",
-    "2405_ubuntu2404",
-  ]
-}
-
-group "rockylinux" {
-  targets = [
-    "master_rockylinux9",
-    "2405_rockylinux9",
-  ]
-}
-
-group "ubuntu" {
-  targets = [
-    "master_ubuntu2404",
-    "2405_ubuntu2404",
-  ]
-}
-
-target "master_rockylinux9" {
-  name = format_name("${stage}", "${version}", "${flavor}")
+target "rockylinux9" {
+  name = format_name("${stage}", "${SLURM_VERSION}", "${flavor}")
   extends = [
     "_default",
   ]
@@ -95,9 +67,6 @@ target "master_rockylinux9" {
       "slurmdbd",
       "slurmrestd",
       "sackd",
-    ]
-    version = [
-      "master",
     ]
     flavor = [
       "rockylinux-9",
@@ -105,8 +74,8 @@ target "master_rockylinux9" {
   }
 }
 
-target "2405_rockylinux9" {
-  name = format_name("${stage}", "${version}", "${flavor}")
+target "ubuntu2404" {
+  name = format_name("${stage}", "${SLURM_VERSION}", "${flavor}")
   extends = [
     "_default",
   ]
@@ -117,53 +86,6 @@ target "2405_rockylinux9" {
       "slurmdbd",
       "slurmrestd",
       "sackd",
-    ]
-    version = [
-      "24.05",
-    ]
-    flavor = [
-      "rockylinux-9",
-    ]
-  }
-}
-
-target "master_ubuntu2404" {
-  name = format_name("${stage}", "${version}", "${flavor}")
-  extends = [
-    "_default",
-  ]
-  matrix = {
-    stage = [
-      "slurmctld",
-      "slurmd",
-      "slurmdbd",
-      "slurmrestd",
-      "sackd",
-    ]
-    version = [
-      "master",
-    ]
-    flavor = [
-      "ubuntu-24.04",
-    ]
-  }
-}
-
-target "2405_ubuntu2404" {
-  name = format_name("${stage}", "${version}", "${flavor}")
-  extends = [
-    "_default",
-  ]
-  matrix = {
-    stage = [
-      "slurmctld",
-      "slurmd",
-      "slurmdbd",
-      "slurmrestd",
-      "sackd",
-    ]
-    version = [
-      "24.05",
     ]
     flavor = [
       "ubuntu-24.04",

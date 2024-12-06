@@ -3,35 +3,40 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ################################################################################
-ARG PARENT_IMAGE=ubuntu:24.04
+ARG PARENT_IMAGE=rockylinux:9
 FROM ${PARENT_IMAGE} AS build
 
 USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-# For: Slurm DEB build
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  build-essential fakeroot devscripts equivs
+dnf -q makecache --refresh
+# For: Slurm RPM build
+dnf -q -y install --setopt='install_weak_deps=False' \
+  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
+dnf -q config-manager --enable crb
 # For: ./scripts/
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  curl jq
-apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q -y install --setopt='install_weak_deps=False' \
+  curl-minimal jq
+dnf clean all
 EOR
 
 COPY scripts/ /tmp/scripts/
-COPY patches/ /tmp/patches/
+COPY patches/ patches/
 
-# Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-ARG SLURM_VERSION="24.05"
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
+ARG SLURM_VERSION="master"
 RUN <<EOR
-apt-get -qq update
+dnf -q makecache --refresh
 /tmp/scripts/download-slurm.sh ${SLURM_VERSION}
 /tmp/scripts/patch-slurm.sh /tmp/patches /tmp/slurm
-mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' /tmp/slurm/debian/control
-( cd /tmp/slurm/ && debuild -b -uc -us >/dev/null )
-apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q config-manager --enable crb
+export SLURM_RPM_TARBALL="$(rpmspec -q /tmp/slurm/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*(-[[:alnum:]]*)?" | head -n1)"
+ln -s slurm $SLURM_RPM_TARBALL
+tar --dereference -caf /tmp/$SLURM_RPM_TARBALL.tar.bz2 $SLURM_RPM_TARBALL
+dnf -q -y builddep -D '_with_slurmrestd 1' -D '_with_jwt 1' -D '_with_yaml 1' -D '_with_numa 1' /tmp/slurm/slurm.spec
+rpmbuild -ta --with slurmrestd --with jwt /tmp/$SLURM_RPM_TARBALL.tar.bz2 >/dev/null
+dnf clean all
 EOR
 
 RUN /tmp/scripts/install-kubectl.sh
@@ -70,30 +75,34 @@ ARG DEBUG=0
 RUN <<EOR
 # For: Development and Debugging
 if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
-  apt-get -qq update
-  DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends sudo
+  dnf -q makecache --refresh
+  dnf -q -y install sudo
   echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
-  apt-get clean && rm -rf /var/lib/apt/lists/*
+  dnf clean all
 fi
 EOR
 ### END DEBUG SECTION ###
 
-# Ref: https://slurm.schedmd.com/quickstart_admin.html#debinstall
-COPY --from=build /tmp/*.deb /tmp/
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#rpms
+COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 
 RUN <<EOR
-apt-get -qq update
+dnf -q makecache --refresh
+# For: Slurm RPM Dependencies
+dnf -q -y install --setopt='install_weak_deps=False' \
+  'dnf-command(config-manager)' epel-release
+dnf config-manager --enable crb
 # For: Helm Chart
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  rsync gettext-base iputils-ping
-apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q -y install --setopt='install_weak_deps=False' \
+  rsync gettext iputils
+dnf clean all
 EOR
 
 COPY --from=build /usr/local/bin/kubectl /usr/local/bin/kubectl
 
 ################################################################################
 # SLURM: slurmctld
-# BUILD: `docker build --target=slurmctld -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
 ################################################################################
 FROM base AS slurmctld
 
@@ -113,14 +122,11 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
-  ./slurm-smd-client_[0-9]*.deb \
-  ./slurm-smd-dev_[0-9]*.deb \
-  ./slurm-smd-doc_[0-9]*.deb \
-  ./slurm-smd-slurmctld_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ./slurm-slurmctld-[0-9]*.rpm \
+  ./slurm-[0-9]*.rpm
+rm *.rpm && dnf clean all
 EOR
 
 ENTRYPOINT ["slurmctld"]
@@ -128,7 +134,7 @@ CMD ["-D"]
 
 ################################################################################
 # SLURM: slurmd
-# BUILD: `docker build --target=slurmd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base AS slurmd
 
@@ -148,17 +154,14 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
-  ./slurm-smd-client_[0-9]*.deb \
-  ./slurm-smd-dev_[0-9]*.deb \
-  ./slurm-smd-doc_[0-9]*.deb \
-  ./slurm-smd-libnss-slurm_[0-9]*.deb \
-  ./slurm-smd-libpam-slurm-adopt_[0-9]*.deb \
-  ./slurm-smd-libpmi2-0_[0-9]*.deb \
-  ./slurm-smd-slurmd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ./slurm-devel-[0-9]*.rpm \
+  ./slurm-libpmi-[0-9]*.rpm \
+  ./slurm-pam_slurm-[0-9]*.rpm \
+  ./slurm-slurmd-[0-9]*.rpm \
+  ./slurm-[0-9]*.rpm
+rm *.rpm && dnf clean all
 EOR
 
 ENTRYPOINT ["slurmd"]
@@ -166,7 +169,7 @@ CMD ["-D"]
 
 ################################################################################
 # SLURM: slurmdbd
-# BUILD: `docker build --target=slurmdbd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmdbd -t [<registry>/]slurmdbd:<tag> .`
 ################################################################################
 FROM base AS slurmdbd
 
@@ -186,12 +189,11 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
-  ./slurm-smd-doc_[0-9]*.deb \
-  ./slurm-smd-slurmdbd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ./slurm-slurmdbd-[0-9]*.rpm \
+  ./slurm-[0-9]*.rpm
+rm *.rpm && dnf clean all
 EOR
 
 ENTRYPOINT ["slurmdbd"]
@@ -199,7 +201,7 @@ CMD ["-D"]
 
 ################################################################################
 # SLURM: slurmrestd
-# BUILD: `docker build --target=slurmrestd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurmrestd -t [<registry>/]slurmrestd:<tag> .`
 ################################################################################
 FROM base AS slurmrestd
 
@@ -219,12 +221,11 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
-  ./slurm-smd-doc_[0-9]*.deb \
-  ./slurm-smd-slurmrestd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ./slurm-slurmrestd-[0-9]*.rpm \
+  ./slurm-[0-9]*.rpm
+rm *.rpm && dnf clean all
 EOR
 
 ENTRYPOINT ["slurmrestd"]
@@ -232,7 +233,7 @@ CMD ["0.0.0.0:6820"]
 
 ################################################################################
 # SLURM: sackd
-# BUILD: `docker build --target=sackd -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
 FROM base AS sackd
 
@@ -252,20 +253,18 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
-  ./slurm-smd-client_[0-9]*.deb \
-  ./slurm-smd-doc_[0-9]*.deb \
-  ./slurm-smd-sackd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ./slurm-sackd-[0-9]*.rpm \
+  ./slurm-[0-9]*.rpm
+rm *.rpm && dnf clean all
 EOR
 
 ENTRYPOINT ["sackd"]
 
 ################################################################################
 # SLURM: slurm
-# BUILD: `docker build --target=slurm -t [<reg>/]<name>:<tag> .`
+# BUILD: `docker build --target=slurm -t [<registry>/]slurm:<tag> .`
 ################################################################################
 FROM base AS slurm
 
@@ -285,21 +284,18 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
-  ./slurm-smd-client_[0-9]*.deb \
-  ./slurm-smd-dev_[0-9]*.deb \
-  ./slurm-smd-doc_[0-9]*.deb \
-  ./slurm-smd-libnss-slurm_[0-9]*.deb \
-  ./slurm-smd-libpam-slurm-adopt_[0-9]*.deb \
-  ./slurm-smd-libpmi2-0_[0-9]*.deb \
-  ./slurm-smd-sackd_[0-9]*.deb \
-  ./slurm-smd-slurmctld_[0-9]*.deb \
-  ./slurm-smd-slurmd_[0-9]*.deb \
-  ./slurm-smd-slurmdbd_[0-9]*.deb \
-  ./slurm-smd-slurmrestd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ./slurm-devel-[0-9]*.rpm \
+  ./slurm-libpmi-[0-9]*.rpm \
+  ./slurm-pam_slurm-[0-9]*.rpm \
+  ./slurm-sackd-[0-9]*.rpm \
+  ./slurm-slurmctld-[0-9]*.rpm \
+  ./slurm-slurmd-[0-9]*.rpm \
+  ./slurm-slurmdbd-[0-9]*.rpm \
+  ./slurm-slurmrestd-[0-9]*.rpm \
+  ./slurm-[0-9]*.rpm
+rm *.rpm && dnf clean all
 EOR
 
 CMD ["bash", "--login"]
