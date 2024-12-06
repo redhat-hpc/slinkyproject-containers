@@ -39,8 +39,6 @@ rpmbuild -ta --with slurmrestd --with jwt /tmp/$SLURM_RPM_TARBALL.tar.bz2 >/dev/
 dnf clean all
 EOR
 
-RUN /tmp/scripts/install-kubectl.sh
-
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
 LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
@@ -97,8 +95,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
 dnf clean all
 EOR
-
-COPY --from=build /usr/local/bin/kubectl /usr/local/bin/kubectl
 
 ################################################################################
 # SLURM: slurmctld

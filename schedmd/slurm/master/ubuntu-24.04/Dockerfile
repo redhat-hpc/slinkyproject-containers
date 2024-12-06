@@ -6,7 +6,33 @@
 ARG PARENT_IMAGE=ubuntu:24.04
 FROM ${PARENT_IMAGE} AS build
 
-ENV SLURM_VERSION=master
+USER root
+WORKDIR /tmp/
+
+RUN <<EOR
+apt-get -qq update
+# For: Slurm DEB build
+DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
+  build-essential fakeroot devscripts equivs
+# For: ./scripts/
+DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
+  curl jq
+apt-get clean && rm -rf /var/lib/apt/lists/*
+EOR
+
+COPY scripts/ /tmp/scripts/
+COPY patches/ /tmp/patches/
+
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
+ARG SLURM_VERSION="master"
+RUN <<EOR
+apt-get -qq update
+/tmp/scripts/download-slurm.sh ${SLURM_VERSION}
+/tmp/scripts/patch-slurm.sh /tmp/patches /tmp/slurm
+mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' /tmp/slurm/debian/control
+( cd /tmp/slurm/ && debuild -b -uc -us >/dev/null )
+apt-get clean && rm -rf /var/lib/apt/lists/*
+EOR
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -22,37 +48,6 @@ LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
 LABEL vendor="SchedMD LLC." \
       version="${SLURM_VERSION}" \
       release="https://github.com/SlinkyProject/containers"
-
-USER root
-WORKDIR /tmp/
-
-COPY patches/ patches/
-
-# Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-RUN <<EOR
-# Download and Build Slurm
-set -Eeu
-apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  build-essential fakeroot devscripts equivs curl
-## Download
-mkdir -p slurm-${SLURM_VERSION}
-ln -s slurm-${SLURM_VERSION} slurm
-if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/slurm-${SLURM_VERSION}.tar.bz2) -eq 200 ]; then
-  curl -s -O https://download.schedmd.com/slurm/slurm-${SLURM_VERSION}.tar.bz2
-  tar --strip-components=1 -jxvf slurm-${SLURM_VERSION}.tar.bz2 -C slurm-${SLURM_VERSION}
-else
-  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
-  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C slurm-${SLURM_VERSION}
-fi
-## Patch
-find patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d slurm -i
-## Build
-mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' slurm/debian/control
-( cd slurm/ && debuild -b -uc -us >/dev/null )
-## Cleanup
-apt-get clean && rm -rf /var/lib/apt/lists/*
-EOR
 
 ################################################################################
 FROM ${PARENT_IMAGE} AS base
