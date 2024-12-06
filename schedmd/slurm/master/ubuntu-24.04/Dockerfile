@@ -6,13 +6,14 @@
 ARG PARENT_IMAGE=ubuntu:24.04
 FROM ${PARENT_IMAGE} AS build
 
+ENV SLURM_VERSION=master
+
 USER root
 WORKDIR /tmp/
 
 COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-ARG SLURM_VERSION="master"
 RUN <<EOR
 # Download and Build Slurm
 set -Eeux

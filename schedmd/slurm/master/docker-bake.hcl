@@ -50,7 +50,6 @@ target "_default" {
   }
   args = {
     DEBUG = "${DOCKER_BAKE_DEBUG_IMAGE}"
-    SLURM_VERSION = "${SLURM_VERSION}"
   }
   target = stage
 }
