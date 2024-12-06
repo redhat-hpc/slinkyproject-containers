@@ -23,6 +23,7 @@ variables:
     matrix:
       - VERSION:
           - master
+          - '24.11'
           - '24.05'
         FLAVOR:
           - rockylinux-9
@@ -35,6 +36,7 @@ variables:
   parallel:
     matrix:
       - VERSION:
+          - '24.11'
           - '24.05'
         FLAVOR:
           - rockylinux-9
