@@ -24,7 +24,7 @@ COPY scripts/ /tmp/scripts/
 COPY patches/ /tmp/patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-ARG SLURM_VERSION="24.05"
+ARG SLURM_VERSION="24.05.4"
 RUN <<EOR
 apt-get -qq update
 /tmp/scripts/download-slurm.sh ${SLURM_VERSION}

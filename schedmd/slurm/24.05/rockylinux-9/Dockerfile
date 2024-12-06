@@ -25,7 +25,7 @@ COPY scripts/ /tmp/scripts/
 COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
-ARG SLURM_VERSION="24.05"
+ARG SLURM_VERSION="24.05.4"
 RUN <<EOR
 dnf -q makecache --refresh
 /tmp/scripts/download-slurm.sh ${SLURM_VERSION}

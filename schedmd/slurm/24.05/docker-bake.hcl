@@ -10,7 +10,7 @@ variable "DOCKER_BAKE_DEBUG_IMAGE" {
 }
 
 variable "SLURM_VERSION" {
-  default = "24.05"
+  default = "24.05.4"
 }
 
 function "format_name" {
