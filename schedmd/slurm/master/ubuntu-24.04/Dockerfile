@@ -8,6 +8,21 @@ FROM ${PARENT_IMAGE} AS build
 
 ENV SLURM_VERSION=master
 
+# OCI Annotations
+# https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
+      org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html" \
+      org.opencontainers.image.license="GPL-2.0+" \
+      org.opencontainers.image.vendor="SchedMD LLC." \
+      org.opencontainers.image.version="${SLURM_VERSION}" \
+      org.opencontainers.image.source="https://github.com/SlinkyProject/containers"
+
+# HasRequiredLabel requirement from Red Hat OpenShift Software Certification
+# https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+LABEL vendor="SchedMD LLC." \
+      version="${SLURM_VERSION}" \
+      release="https://github.com/SlinkyProject/containers"
+
 USER root
 WORKDIR /tmp/
 
@@ -38,21 +53,6 @@ mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-i
 ## Cleanup
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
-
-# OCI Annotations
-# https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html" \
-      org.opencontainers.image.license="GPL-2.0+" \
-      org.opencontainers.image.vendor="SchedMD LLC." \
-      org.opencontainers.image.version="${SLURM_VERSION}" \
-      org.opencontainers.image.source="https://github.com/SlinkyProject/containers"
-
-# HasRequiredLabel requirement from Red Hat OpenShift Software Certification
-# https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL vendor="SchedMD LLC." \
-      version="${SLURM_VERSION}" \
-      release="https://github.com/SlinkyProject/containers"
 
 ################################################################################
 FROM ${PARENT_IMAGE} AS base
