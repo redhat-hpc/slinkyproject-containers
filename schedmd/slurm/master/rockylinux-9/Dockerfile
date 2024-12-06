@@ -91,6 +91,7 @@ EOR
 COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 
 RUN <<EOR
+# Install Dependencies
 dnf -q makecache --refresh
 # For: Slurm RPM Dependencies
 dnf -q -y install --setopt='install_weak_deps=False' \
@@ -124,6 +125,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmctld-[0-9]*.rpm \
@@ -156,6 +158,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-devel-[0-9]*.rpm \
@@ -191,6 +194,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmdbd-[0-9]*.rpm \
@@ -223,6 +227,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmrestd-[0-9]*.rpm \
@@ -255,6 +260,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
@@ -286,6 +292,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-devel-[0-9]*.rpm \
