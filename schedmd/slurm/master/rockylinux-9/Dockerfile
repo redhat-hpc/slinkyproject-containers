@@ -9,15 +9,6 @@ FROM ${PARENT_IMAGE} AS build
 USER root
 WORKDIR /tmp/
 
-RUN <<EOR
-dnf -q makecache --refresh
-# For: Slurm RPM build
-dnf -q -y install --setopt='install_weak_deps=False' \
-  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
-dnf -q config-manager --enable crb
-dnf clean all
-EOR
-
 COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
@@ -26,6 +17,9 @@ RUN <<EOR
 # Download and Build Slurm
 set -Eeux
 dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
+dnf -q config-manager --enable crb
 ## Download
 SLURM_DIR="slurm-${SLURM_VERSION}"
 mkdir -p $SLURM_DIR

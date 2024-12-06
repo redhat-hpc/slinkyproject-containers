@@ -9,14 +9,6 @@ FROM ${PARENT_IMAGE} AS build
 USER root
 WORKDIR /tmp/
 
-RUN <<EOR
-apt-get -qq update
-# For: Slurm DEB build
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  build-essential fakeroot devscripts equivs curl
-apt-get clean && rm -rf /var/lib/apt/lists/*
-EOR
-
 COPY patches/ /tmp/patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
@@ -25,6 +17,8 @@ RUN <<EOR
 # Download and Build Slurm
 set -Eeux
 apt-get -qq update
+DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
+  build-essential fakeroot devscripts equivs curl
 ## Download
 SLURM_DIR="slurm-${SLURM_VERSION}"
 mkdir -p $SLURM_DIR
