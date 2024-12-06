@@ -39,7 +39,6 @@ RUN /tmp/scripts/install-kubectl.sh
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
 LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
-      org.opencontainers.image.base.name="${PARENT_IMAGE}" \
       org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html" \
       org.opencontainers.image.license="GPL-2.0+" \
       org.opencontainers.image.vendor="SchedMD LLC." \
