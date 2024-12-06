@@ -13,29 +13,41 @@ RUN <<EOR
 dnf -q makecache --refresh
 # For: Slurm RPM build
 dnf -q -y install --setopt='install_weak_deps=False' \
-  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
+  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
 dnf -q config-manager --enable crb
-# For: ./scripts/
-dnf -q -y install --setopt='install_weak_deps=False' \
-  curl-minimal jq
 dnf clean all
 EOR
 
-COPY scripts/ /tmp/scripts/
 COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
 ARG SLURM_VERSION="master"
 RUN <<EOR
+# Download and Build Slurm
+set -Eeux
 dnf -q makecache --refresh
-/tmp/scripts/download-slurm.sh ${SLURM_VERSION}
-/tmp/scripts/patch-slurm.sh /tmp/patches /tmp/slurm
-dnf -q config-manager --enable crb
-export SLURM_RPM_TARBALL="$(rpmspec -q /tmp/slurm/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*(-[[:alnum:]]*)?" | head -n1)"
-ln -s slurm $SLURM_RPM_TARBALL
-tar --dereference -caf /tmp/$SLURM_RPM_TARBALL.tar.bz2 $SLURM_RPM_TARBALL
-dnf -q -y builddep -D '_with_slurmrestd 1' -D '_with_jwt 1' -D '_with_yaml 1' -D '_with_numa 1' /tmp/slurm/slurm.spec
-rpmbuild -ta --with slurmrestd --with jwt /tmp/$SLURM_RPM_TARBALL.tar.bz2 >/dev/null
+## Download
+SLURM_DIR="slurm-${SLURM_VERSION}"
+mkdir -p $SLURM_DIR
+if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
+  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
+  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C $SLURM_DIR
+else
+  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
+  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C $SLURM_DIR
+fi
+## Patch
+find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d $SLURM_DIR -i
+## Build
+SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*(-[[:alnum:]]*)?" | head -n1 | sed -E 's/-[[:alnum:]]+$//g')"
+if [ "$SLURM_DIR" != "$SLURM_RPM_DIR" ]; then
+  mv $SLURM_DIR $SLURM_RPM_DIR
+fi
+rm -f ${SLURM_RPM_DIR}.tar.bz2
+tar -caf ${SLURM_RPM_DIR}.tar.bz2 $SLURM_RPM_DIR
+dnf -q -y builddep -D '_with_slurmrestd 1' -D '_with_jwt 1' -D '_with_yaml 1' -D '_with_numa 1' ${SLURM_RPM_DIR}/slurm.spec
+rpmbuild -ta --with slurmrestd --with jwt ${SLURM_RPM_DIR}.tar.bz2 >/dev/null
+## Cleanup
 dnf clean all
 EOR
 
