@@ -6,35 +6,7 @@
 ARG PARENT_IMAGE=ubuntu:24.04
 FROM ${PARENT_IMAGE} AS build
 
-USER root
-WORKDIR /tmp/
-
-RUN <<EOR
-apt-get -qq update
-# For: Slurm DEB build
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  build-essential fakeroot devscripts equivs
-# For: ./scripts/
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
-  curl jq
-apt-get clean && rm -rf /var/lib/apt/lists/*
-EOR
-
-COPY scripts/ /tmp/scripts/
-COPY patches/ /tmp/patches/
-
-# Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-ARG SLURM_VERSION="24.05.4"
-RUN <<EOR
-apt-get -qq update
-/tmp/scripts/download-slurm.sh ${SLURM_VERSION}
-/tmp/scripts/patch-slurm.sh /tmp/patches /tmp/slurm
-mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' /tmp/slurm/debian/control
-( cd /tmp/slurm/ && debuild -b -uc -us >/dev/null )
-apt-get clean && rm -rf /var/lib/apt/lists/*
-EOR
-
-RUN /tmp/scripts/install-kubectl.sh
+ENV SLURM_VERSION=24.05.4
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -50,6 +22,37 @@ LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
 LABEL vendor="SchedMD LLC." \
       version="${SLURM_VERSION}" \
       release="https://github.com/SlinkyProject/containers"
+
+USER root
+WORKDIR /tmp/
+
+COPY patches/ patches/
+
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
+RUN <<EOR
+# Download and Build Slurm
+set -Eeu
+apt-get -qq update
+DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
+  build-essential fakeroot devscripts equivs curl
+## Download
+SLURM_DIR="slurm-${SLURM_VERSION}"
+mkdir -p $SLURM_DIR
+if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
+  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
+  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C $SLURM_DIR
+else
+  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
+  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C $SLURM_DIR
+fi
+## Patch
+find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d $SLURM_DIR -i
+## Build
+mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' ${SLURM_DIR}/debian/control
+( cd $SLURM_DIR && debuild -b -uc -us >/dev/null )
+## Cleanup
+apt-get clean && rm -rf /var/lib/apt/lists/*
+EOR
 
 ################################################################################
 FROM ${PARENT_IMAGE} AS base
@@ -82,14 +85,13 @@ EOR
 COPY --from=build /tmp/*.deb /tmp/
 
 RUN <<EOR
+# Install Dependencies
 apt-get -qq update
 # For: Helm Chart
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
-
-COPY --from=build /usr/local/bin/kubectl /usr/local/bin/kubectl
 
 ################################################################################
 # SLURM: slurmctld
@@ -113,6 +115,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
@@ -148,6 +151,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
@@ -186,6 +190,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -219,6 +224,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -252,6 +258,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
@@ -285,6 +292,7 @@ USER root
 WORKDIR /tmp/
 
 RUN <<EOR
+# Install Slurm Packages
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
