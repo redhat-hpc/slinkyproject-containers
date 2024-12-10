@@ -44,8 +44,8 @@ target "_default" {
       "sackd",
     ]
     flavor = [
-      "rockylinux-9",
-      "ubuntu-24.04",
+      "rockylinux9",
+      "ubuntu24.04",
     ]
   }
   args = {
@@ -68,7 +68,7 @@ target "rockylinux9" {
       "sackd",
     ]
     flavor = [
-      "rockylinux-9",
+      "rockylinux9",
     ]
   }
 }
@@ -87,7 +87,7 @@ target "ubuntu2404" {
       "sackd",
     ]
     flavor = [
-      "ubuntu-24.04",
+      "ubuntu24.04",
     ]
   }
 }

@@ -26,8 +26,8 @@ variables:
           - '24.11'
           - '24.05'
         FLAVOR:
-          - rockylinux-9
-          - ubuntu-24.04
+          - rockylinux9
+          - ubuntu24.04
 
 .slurm-release:
   variables:
@@ -39,8 +39,8 @@ variables:
           - '24.11'
           - '24.05'
         FLAVOR:
-          - rockylinux-9
-          - ubuntu-24.04
+          - rockylinux9
+          - ubuntu24.04
 
 build:
   stage: build
