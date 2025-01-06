@@ -5,7 +5,7 @@ variable "DOCKER_BAKE_REGISTRY" {}
 
 variable "DOCKER_BAKE_SUFFIX" {}
 
-variable "DOCKER_BAKE_DEBUG_IMAGE" {
+variable "DEBUG" {
   default = "0"
 }
 
@@ -49,7 +49,7 @@ target "_default" {
     ]
   }
   args = {
-    DEBUG = "${DOCKER_BAKE_DEBUG_IMAGE}"
+    DEBUG = "${DEBUG}"
   }
   target = stage
 }
