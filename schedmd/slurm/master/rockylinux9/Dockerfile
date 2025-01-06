@@ -10,18 +10,20 @@ ENV SLURM_VERSION=master
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.authors="slinky@schedmd.com" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html" \
-      org.opencontainers.image.license="GPL-2.0+" \
-      org.opencontainers.image.vendor="SchedMD LLC." \
-      org.opencontainers.image.version="${SLURM_VERSION}" \
-      org.opencontainers.image.source="https://github.com/SlinkyProject/containers"
+LABEL \
+  org.opencontainers.image.authors="slinky@schedmd.com" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html" \
+  org.opencontainers.image.license="GPL-2.0+" \
+  org.opencontainers.image.vendor="SchedMD LLC." \
+  org.opencontainers.image.version="${SLURM_VERSION}" \
+  org.opencontainers.image.source="https://github.com/SlinkyProject/containers"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL vendor="SchedMD LLC." \
-      version="${SLURM_VERSION}" \
-      release="https://github.com/SlinkyProject/containers"
+LABEL \
+  vendor="SchedMD LLC." \
+  version="${SLURM_VERSION}" \
+  release="https://github.com/SlinkyProject/containers"
 
 USER root
 WORKDIR /tmp/
@@ -112,15 +114,17 @@ FROM base AS slurmctld
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.title="Slurm Control Plane" \
-      org.opencontainers.image.description="slurmctld - The central management daemon of Slurm" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmctld.html"
+LABEL \
+  org.opencontainers.image.title="Slurm Control Plane" \
+  org.opencontainers.image.description="slurmctld - The central management daemon of Slurm" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmctld.html"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm Control Plane" \
-      summary="slurmctld - The central management daemon of Slurm" \
-      description="slurmctld - The central management daemon of Slurm"
+LABEL \
+  name="Slurm Control Plane" \
+  summary="slurmctld - The central management daemon of Slurm" \
+  description="slurmctld - The central management daemon of Slurm"
 
 USER root
 WORKDIR /tmp/
@@ -145,15 +149,17 @@ FROM base AS slurmd
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.title="Slurm Worker Agent" \
-      org.opencontainers.image.description="slurmd - The compute node daemon for Slurm" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmd.html"
+LABEL \
+  org.opencontainers.image.title="Slurm Worker Agent" \
+  org.opencontainers.image.description="slurmd - The compute node daemon for Slurm" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmd.html"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm Worker Agent" \
-      summary="slurmd - The compute node daemon for Slurm" \
-      description="slurmd - The compute node daemon for Slurm"
+LABEL \
+  name="Slurm Worker Agent" \
+  summary="slurmd - The compute node daemon for Slurm" \
+  description="slurmd - The compute node daemon for Slurm"
 
 USER root
 WORKDIR /tmp/
@@ -181,15 +187,17 @@ FROM base AS slurmdbd
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.title="Slurm Database Agent" \
-      org.opencontainers.image.description="slurmdbd - Slurm Database Daemon" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmdbd.html"
+LABEL \
+  org.opencontainers.image.title="Slurm Database Agent" \
+  org.opencontainers.image.description="slurmdbd - Slurm Database Daemon" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmdbd.html"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm Database Agent" \
-      summary="slurmdbd - Slurm Database Daemon" \
-      description="slurmdbd - Slurm Database Daemon"
+LABEL \
+  name="Slurm Database Agent" \
+  summary="slurmdbd - Slurm Database Daemon" \
+  description="slurmdbd - Slurm Database Daemon"
 
 USER root
 WORKDIR /tmp/
@@ -214,15 +222,17 @@ FROM base AS slurmrestd
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.title="Slurm REST API Agent" \
-      org.opencontainers.image.description="slurmrestd - Interface to Slurm via REST API" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmrestd.html"
+LABEL \
+  org.opencontainers.image.title="Slurm REST API Agent" \
+  org.opencontainers.image.description="slurmrestd - Interface to Slurm via REST API" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/slurmrestd.html"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm REST API Agent" \
-      summary="slurmrestd - Interface to Slurm via REST API" \
-      description="slurmrestd - Interface to Slurm via REST API"
+LABEL \
+  name="Slurm REST API Agent" \
+  summary="slurmrestd - Interface to Slurm via REST API" \
+  description="slurmrestd - Interface to Slurm via REST API"
 
 USER root
 WORKDIR /tmp/
@@ -247,15 +257,17 @@ FROM base AS sackd
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.title="Slurm Auth/Cred Server" \
-      org.opencontainers.image.description="sackd - Slurm Auth and Cred Kiosk Daemon" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/sackd.html"
+LABEL \
+  org.opencontainers.image.title="Slurm Auth/Cred Server" \
+  org.opencontainers.image.description="sackd - Slurm Auth and Cred Kiosk Daemon" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/sackd.html"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm Auth/Cred Server" \
-      summary="sackd - Slurm Auth and Cred Kiosk Daemon" \
-      description="sackd - Slurm Auth and Cred Kiosk Daemon"
+LABEL \
+  name="Slurm Auth/Cred Server" \
+  summary="sackd - Slurm Auth and Cred Kiosk Daemon" \
+  description="sackd - Slurm Auth and Cred Kiosk Daemon"
 
 USER root
 WORKDIR /tmp/
@@ -279,15 +291,17 @@ FROM base AS slurm
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
-LABEL org.opencontainers.image.title="Slurm" \
-      org.opencontainers.image.description="Contains all Slurm daemons" \
-      org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html"
+LABEL \
+  org.opencontainers.image.title="Slurm" \
+  org.opencontainers.image.description="Contains all Slurm daemons" \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html"
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm" \
-      summary="Contains all Slurm daemons" \
-      description="Contains all Slurm daemons"
+LABEL \
+  name="Slurm" \
+  summary="Contains all Slurm daemons" \
+  description="Contains all Slurm daemons"
 
 USER root
 WORKDIR /tmp/
