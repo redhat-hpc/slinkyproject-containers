@@ -84,10 +84,15 @@ release:
     - |
       set -x
       for daemon in $(sed -n 's/^FROM[[:space:]]\+[^ ]\+[[:space:]]\+AS[[:space:]]\+\([^ ]\+\)$/\1/p' Dockerfile | grep -Eo "^s(lurm.*|ack)d$") ; do
-        image="${daemon}:${VERSION}-${FLAVOR}"
+        version="$(grep -Eo "SLURM_VERSION=[^ ]+" Dockerfile | cut -d= -f2)"
+        image="${daemon}:${version}-${FLAVOR}"
         docker pull "${DOCKER_SOURCE_REGISTRY}/${image}"
         docker tag "${DOCKER_SOURCE_REGISTRY}/${image}" "${DOCKER_TARGET_REGISTRY}/${image}"
         docker push "${DOCKER_TARGET_REGISTRY}/${image}"
+
+        imageLatest="${daemon}:${VERSION}-${FLAVOR}"
+        docker tag "${DOCKER_TARGET_REGISTRY}/${image}" "${DOCKER_TARGET_REGISTRY}/${imageLatest}"
+        docker push "${DOCKER_TARGET_REGISTRY}/${imageLatest}"
       done
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
