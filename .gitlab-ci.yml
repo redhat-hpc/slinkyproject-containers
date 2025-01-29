@@ -18,7 +18,7 @@ variables:
 
 .slurm:
   variables:
-    DOCKER_SOURCE_REGISTRY: $CI_REGISTRY_IMAGE
+    DOCKER_BAKE_REGISTRY: $CI_REGISTRY_IMAGE
   parallel:
     matrix:
       - VERSION:
