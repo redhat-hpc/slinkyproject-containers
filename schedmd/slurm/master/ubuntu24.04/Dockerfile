@@ -8,6 +8,8 @@ FROM ${PARENT_IMAGE} AS build
 
 SHELL ["bash", "-c"]
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 ENV SLURM_VERSION=master
 
 # OCI Annotations
@@ -37,7 +39,7 @@ RUN <<EOR
 # Download and Build Slurm
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
+apt-get -qq -y install --no-install-recommends \
   build-essential fakeroot devscripts equivs curl
 ## Download
 SLURM_DIR="slurm-${SLURM_VERSION}"
@@ -63,6 +65,8 @@ FROM ${PARENT_IMAGE} AS base
 
 SHELL ["bash", "-c"]
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 USER root
 WORKDIR /tmp/
 
@@ -84,7 +88,7 @@ RUN <<EOR
 set -xeuo pipefail
 if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
   apt-get -qq update
-  DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends sudo
+  apt-get -qq -y install --no-install-recommends sudo
   echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
   apt-get clean && rm -rf /var/lib/apt/lists/*
 fi
@@ -98,7 +102,7 @@ RUN <<EOR
 # Install Dependencies
 apt-get -qq update
 # For: Helm Chart
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
+apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
@@ -110,6 +114,8 @@ EOR
 FROM base AS slurmctld
 
 SHELL ["bash", "-c"]
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -132,7 +138,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -151,6 +157,8 @@ CMD ["-D"]
 FROM base AS slurmd
 
 SHELL ["bash", "-c"]
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -173,7 +181,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -196,6 +204,8 @@ FROM base AS slurmdbd
 
 SHELL ["bash", "-c"]
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
 LABEL \
@@ -217,7 +227,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmdbd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
@@ -234,6 +244,8 @@ CMD ["-D"]
 FROM base AS slurmrestd
 
 SHELL ["bash", "-c"]
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -256,7 +268,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmrestd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
@@ -273,6 +285,8 @@ CMD ["0.0.0.0:6820"]
 FROM base AS sackd
 
 SHELL ["bash", "-c"]
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -295,7 +309,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \
@@ -312,6 +326,8 @@ ENTRYPOINT ["sackd"]
 FROM base AS slurm
 
 SHELL ["bash", "-c"]
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -334,7 +350,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
