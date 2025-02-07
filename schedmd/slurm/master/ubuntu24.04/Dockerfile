@@ -6,6 +6,8 @@
 ARG PARENT_IMAGE=ubuntu:24.04
 FROM ${PARENT_IMAGE} AS build
 
+SHELL ["bash", "-c"]
+
 ENV SLURM_VERSION=master
 
 # OCI Annotations
@@ -33,7 +35,7 @@ COPY patches/ patches/
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
 RUN <<EOR
 # Download and Build Slurm
-set -Eeux
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends \
   build-essential fakeroot devscripts equivs curl
@@ -59,6 +61,8 @@ EOR
 ################################################################################
 FROM ${PARENT_IMAGE} AS base
 
+SHELL ["bash", "-c"]
+
 USER root
 WORKDIR /tmp/
 
@@ -68,6 +72,7 @@ ARG SLURM_USER_GID=401
 
 RUN <<EOR
 # Create SlurmUser
+set -xeuo pipefail
 groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
@@ -76,6 +81,7 @@ EOR
 ARG DEBUG=0
 RUN <<EOR
 # For: Development and Debugging
+set -xeuo pipefail
 if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
   apt-get -qq update
   DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --no-install-recommends sudo
@@ -103,6 +109,8 @@ EOR
 ################################################################################
 FROM base AS slurmctld
 
+SHELL ["bash", "-c"]
+
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
 LABEL \
@@ -122,6 +130,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
@@ -140,6 +149,8 @@ CMD ["-D"]
 # BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base AS slurmd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -160,6 +171,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
@@ -182,6 +194,8 @@ CMD ["-D"]
 ################################################################################
 FROM base AS slurmdbd
 
+SHELL ["bash", "-c"]
+
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
 LABEL \
@@ -201,6 +215,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -217,6 +232,8 @@ CMD ["-D"]
 # BUILD: `docker build --target=slurmrestd -t [<registry>/]slurmrestd:<tag> .`
 ################################################################################
 FROM base AS slurmrestd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -237,6 +254,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -253,6 +271,8 @@ CMD ["0.0.0.0:6820"]
 # BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
 FROM base AS sackd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -273,6 +293,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
@@ -289,6 +310,8 @@ ENTRYPOINT ["sackd"]
 # BUILD: `docker build --target=slurm -t [<registry>/]slurm:<tag> .`
 ################################################################################
 FROM base AS slurm
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -309,6 +332,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 apt-get -qq update
 DEBIAN_FRONTEND=noninteractive apt-get -qq -y install --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \

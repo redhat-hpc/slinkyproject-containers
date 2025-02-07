@@ -6,6 +6,8 @@
 ARG PARENT_IMAGE=rockylinux:9
 FROM ${PARENT_IMAGE} AS build
 
+SHELL ["bash", "-c"]
+
 ENV SLURM_VERSION=24.05.4
 
 # OCI Annotations
@@ -33,7 +35,7 @@ COPY patches/ patches/
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
 RUN <<EOR
 # Download and Build Slurm
-set -Eeu
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
@@ -65,6 +67,8 @@ EOR
 ################################################################################
 FROM ${PARENT_IMAGE} AS base
 
+SHELL ["bash", "-c"]
+
 USER root
 WORKDIR /tmp/
 
@@ -74,6 +78,7 @@ ARG SLURM_USER_GID=401
 
 RUN <<EOR
 # Create SlurmUser
+set -xeuo pipefail
 groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
@@ -82,6 +87,7 @@ EOR
 ARG DEBUG=0
 RUN <<EOR
 # For: Development and Debugging
+set -xeuo pipefail
 if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
   dnf -q makecache --refresh
   dnf -q -y install sudo
@@ -96,6 +102,7 @@ COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 
 RUN <<EOR
 # Install Dependencies
+set -xeuo pipefail
 dnf -q makecache --refresh
 # For: Slurm RPM Dependencies
 dnf -q -y install --setopt='install_weak_deps=False' \
@@ -112,6 +119,8 @@ EOR
 # BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
 ################################################################################
 FROM base AS slurmctld
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -132,6 +141,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmctld-[0-9]*.rpm \
@@ -147,6 +157,8 @@ CMD ["-D"]
 # BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base AS slurmd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -167,6 +179,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-devel-[0-9]*.rpm \
@@ -185,6 +198,8 @@ CMD ["-D"]
 # BUILD: `docker build --target=slurmdbd -t [<registry>/]slurmdbd:<tag> .`
 ################################################################################
 FROM base AS slurmdbd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -205,6 +220,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmdbd-[0-9]*.rpm \
@@ -220,6 +236,8 @@ CMD ["-D"]
 # BUILD: `docker build --target=slurmrestd -t [<registry>/]slurmrestd:<tag> .`
 ################################################################################
 FROM base AS slurmrestd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -240,6 +258,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmrestd-[0-9]*.rpm \
@@ -255,6 +274,8 @@ CMD ["0.0.0.0:6820"]
 # BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
 FROM base AS sackd
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -275,6 +296,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
@@ -289,6 +311,8 @@ ENTRYPOINT ["sackd"]
 # BUILD: `docker build --target=slurm -t [<registry>/]slurm:<tag> .`
 ################################################################################
 FROM base AS slurm
+
+SHELL ["bash", "-c"]
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
@@ -309,6 +333,7 @@ WORKDIR /tmp/
 
 RUN <<EOR
 # Install Slurm Packages
+set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-devel-[0-9]*.rpm \
