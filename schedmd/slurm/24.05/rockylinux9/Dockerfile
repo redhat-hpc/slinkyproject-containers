@@ -149,8 +149,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmctld"]
-CMD ["-D"]
+ENTRYPOINT ["slurmctld", "-D"]
 
 ################################################################################
 # SLURM: slurmd
@@ -176,7 +175,6 @@ LABEL \
 
 USER root
 WORKDIR /tmp/
-
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
@@ -190,8 +188,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmd"]
-CMD ["-D"]
+ENTRYPOINT ["slurmd", "-D"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -228,8 +225,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmdbd"]
-CMD ["-D"]
+ENTRYPOINT ["slurmdbd", "-D"]
 
 ################################################################################
 # SLURM: slurmrestd

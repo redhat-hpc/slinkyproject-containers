@@ -147,8 +147,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmctld"]
-CMD ["-D"]
+ENTRYPOINT ["slurmctld", "-D"]
 
 ################################################################################
 # SLURM: slurmd
@@ -193,8 +192,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmd"]
-CMD ["-D"]
+ENTRYPOINT ["slurmd", "-D"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -234,8 +232,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmdbd"]
-CMD ["-D"]
+ENTRYPOINT ["slurmdbd", "-D"]
 
 ################################################################################
 # SLURM: slurmrestd

@@ -150,8 +150,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmctld"]
-CMD ["-D"]
+ENTRYPOINT ["slurmctld", "-D"]
 
 ################################################################################
 # SLURM: slurmd
@@ -191,8 +190,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmd"]
-CMD ["-D"]
+ENTRYPOINT ["slurmd", "-D"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -229,8 +227,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmdbd"]
-CMD ["-D"]
+ENTRYPOINT ["slurmdbd", "-D"]
 
 ################################################################################
 # SLURM: slurmrestd
