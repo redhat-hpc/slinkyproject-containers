@@ -65,7 +65,9 @@ WORKDIR /tmp/
 ARG SLURM_USER=slurm
 ARG SLURM_USER_UID=401
 ARG SLURM_USER_GID=401
+
 RUN <<EOR
+# Create SlurmUser
 groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
