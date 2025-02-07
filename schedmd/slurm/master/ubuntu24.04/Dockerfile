@@ -93,6 +93,25 @@ apt-get -qq -y install --no-install-recommends \
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+ENV KUBECTL_VERSION=1.32
+
+# Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
+RUN <<EOR
+# Install kubectl
+set -xeuo pipefail
+apt-get -qq update
+apt-get -qq -y install --no-install-recommends \
+  apt-transport-https ca-certificates curl gnupg
+mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list
+chmod 644 /etc/apt/sources.list.d/kubernetes.list
+apt-get -qq update
+apt-get -qq -y install --no-install-recommends kubectl
+apt-get clean && rm -rf /var/lib/apt/lists/*
+EOR
+
 ## START DEBUG SECTION ###
 ARG DEBUG=0
 RUN <<EOR
