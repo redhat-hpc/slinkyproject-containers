@@ -148,9 +148,10 @@ LABEL \
 
 # HasRequiredLabel requirement from Red Hat OpenShift Software Certification
 # https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
-LABEL name="Slurm Worker Agent" \
-      summary="slurmd - The compute node daemon for Slurm" \
-      description="slurmd - The compute node daemon for Slurm"
+LABEL \
+  name="Slurm Worker Agent" \
+  summary="slurmd - The compute node daemon for Slurm" \
+  description="slurmd - The compute node daemon for Slurm"
 
 USER root
 WORKDIR /tmp/
