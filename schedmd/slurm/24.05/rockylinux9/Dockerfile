@@ -8,7 +8,7 @@ FROM ${PARENT_IMAGE} AS build
 
 SHELL ["bash", "-c"]
 
-ENV SLURM_VERSION=24.05.4
+ENV SLURM_VERSION=24.05.5
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md

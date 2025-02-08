@@ -10,7 +10,7 @@ SHELL ["bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ENV SLURM_VERSION=24.11.0
+ENV SLURM_VERSION=24.11.1
 
 # OCI Annotations
 # https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
