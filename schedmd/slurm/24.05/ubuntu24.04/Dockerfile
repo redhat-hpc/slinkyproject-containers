@@ -81,6 +81,19 @@ groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
 
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#debinstall
+COPY --from=build /tmp/*.deb /tmp/
+
+RUN <<EOR
+# Install Dependencies
+set -xeuo pipefail
+apt-get -qq update
+# For: Helm Chart
+apt-get -qq -y install --no-install-recommends \
+  rsync gettext-base iputils-ping
+apt-get clean && rm -rf /var/lib/apt/lists/*
+EOR
+
 ## START DEBUG SECTION ###
 ARG DEBUG=0
 RUN <<EOR
@@ -94,19 +107,6 @@ if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
 fi
 EOR
 ### END DEBUG SECTION ###
-
-# Ref: https://slurm.schedmd.com/quickstart_admin.html#debinstall
-COPY --from=build /tmp/*.deb /tmp/
-
-RUN <<EOR
-# Install Dependencies
-set -xeuo pipefail
-apt-get -qq update
-# For: Helm Chart
-apt-get -qq -y install --no-install-recommends \
-  rsync gettext-base iputils-ping
-apt-get clean && rm -rf /var/lib/apt/lists/*
-EOR
 
 ################################################################################
 # SLURM: slurmctld

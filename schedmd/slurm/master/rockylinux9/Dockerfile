@@ -84,20 +84,6 @@ groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
 
-## START DEBUG SECTION ###
-ARG DEBUG=0
-RUN <<EOR
-# For: Development and Debugging
-set -xeuo pipefail
-if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
-  dnf -q makecache --refresh
-  dnf -q -y install sudo
-  echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
-  dnf clean all
-fi
-EOR
-### END DEBUG SECTION ###
-
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpms
 COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 
@@ -114,6 +100,20 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
 dnf clean all
 EOR
+
+## START DEBUG SECTION ###
+ARG DEBUG=0
+RUN <<EOR
+# For: Development and Debugging
+set -xeuo pipefail
+if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
+  dnf -q makecache --refresh
+  dnf -q -y install sudo
+  echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
+  dnf clean all
+fi
+EOR
+### END DEBUG SECTION ###
 
 ################################################################################
 # SLURM: slurmctld
