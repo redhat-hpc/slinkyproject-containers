@@ -91,6 +91,8 @@ apt-get -qq update
 # For: Helm Chart
 apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
+# Init System
+apt-get -qq -y install --no-install-recommends tini
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
@@ -167,7 +169,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmctld", "-D"]
+ENTRYPOINT ["tini", "-g", "--", "slurmctld", "-D"]
 
 ################################################################################
 # SLURM: slurmd
@@ -212,7 +214,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmd", "-D"]
+ENTRYPOINT ["tini", "-g", "--", "slurmd", "-D"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -252,7 +254,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmdbd", "-D"]
+ENTRYPOINT ["tini", "-g", "--", "slurmdbd", "-D"]
 
 ################################################################################
 # SLURM: slurmrestd
@@ -292,7 +294,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["slurmrestd"]
+ENTRYPOINT ["tini", "-g", "--", "slurmrestd"]
 CMD ["0.0.0.0:6820"]
 
 ################################################################################
@@ -334,7 +336,7 @@ apt-get -qq -y install --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENTRYPOINT ["sackd"]
+ENTRYPOINT ["tini", "-g", "--", "sackd"]
 
 ################################################################################
 # SLURM: slurm

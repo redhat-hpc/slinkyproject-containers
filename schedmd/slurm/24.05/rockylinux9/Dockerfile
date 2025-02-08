@@ -94,6 +94,8 @@ dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
+# Init System
+dnf -q -y install --setopt='install_weak_deps=False' tini
 # For: Helm Chart
 dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
@@ -168,7 +170,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmctld", "-D"]
+ENTRYPOINT ["tini", "-g", "--", "slurmctld", "-D"]
 
 ################################################################################
 # SLURM: slurmd
@@ -194,6 +196,7 @@ LABEL \
 
 USER root
 WORKDIR /tmp/
+
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
@@ -207,7 +210,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmd", "-D"]
+ENTRYPOINT ["tini", "-g", "--", "slurmd", "-D"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -244,7 +247,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmdbd", "-D"]
+ENTRYPOINT ["tini", "-g", "--", "slurmdbd", "-D"]
 
 ################################################################################
 # SLURM: slurmrestd
@@ -281,7 +284,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["slurmrestd"]
+ENTRYPOINT ["tini", "-g", "--", "slurmrestd"]
 CMD ["0.0.0.0:6820"]
 
 ################################################################################
@@ -319,7 +322,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["sackd"]
+ENTRYPOINT ["tini", "-g", "--", "sackd"]
 
 ################################################################################
 # SLURM: slurm
