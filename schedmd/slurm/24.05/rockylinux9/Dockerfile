@@ -322,7 +322,21 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-ENTRYPOINT ["tini", "-g", "--", "sackd"]
+RUN <<EOR
+# Create sackd Entrypoint Wrapper
+set -xeuo pipefail
+cat <<EOF | tee /usr/local/bin/sackd.sh
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+sackd "\$@" 1>/proc/1/fd/1 2>/proc/1/fd/2
+exec sleep infinity
+EOF
+chmod +x /usr/local/bin/sackd.sh
+EOR
+
+ENTRYPOINT ["tini", "-g", "--", "sackd.sh"]
 
 ################################################################################
 # SLURM: slurm
