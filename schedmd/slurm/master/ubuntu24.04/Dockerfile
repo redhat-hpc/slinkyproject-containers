@@ -81,7 +81,6 @@ groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
 
-# Ref: https://slurm.schedmd.com/quickstart_admin.html#debinstall
 COPY --from=build /tmp/*.deb /tmp/
 
 RUN <<EOR
@@ -155,6 +154,7 @@ LABEL \
 USER root
 WORKDIR /tmp/
 
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
@@ -197,6 +197,7 @@ LABEL \
 USER root
 WORKDIR /tmp/
 
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
@@ -242,6 +243,7 @@ LABEL \
 USER root
 WORKDIR /tmp/
 
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
@@ -282,6 +284,7 @@ LABEL \
 USER root
 WORKDIR /tmp/
 
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
@@ -323,6 +326,7 @@ LABEL \
 USER root
 WORKDIR /tmp/
 
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
