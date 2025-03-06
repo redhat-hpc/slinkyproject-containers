@@ -66,7 +66,7 @@ ENV SLURM_VERSION=${SLURM_VERSION}
 LABEL \
   org.opencontainers.image.authors="slinky@schedmd.com" \
   org.opencontainers.image.documentation="https://slurm.schedmd.com/documentation.html" \
-  org.opencontainers.image.license="GPL-2.0+" \
+  org.opencontainers.image.license="GPL-2.0-or-later" \
   org.opencontainers.image.vendor="SchedMD LLC." \
   org.opencontainers.image.version="${SLURM_VERSION}" \
   org.opencontainers.image.source="https://github.com/SlinkyProject/containers"
