@@ -23,6 +23,7 @@ default:
 variables:
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: /certs
+  FF_SCRIPT_SECTIONS: true
 
 .slurm:
   variables:
