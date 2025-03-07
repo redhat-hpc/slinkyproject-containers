@@ -77,38 +77,20 @@ build:
     - if: $VERSION == 'master'
       allow_failure: true
 
-push:
-  stage: build
-  extends: .slurm
+release:
+  stage: release
+  extends:
+    - .slurm
+    - .slurm-release
   script:
     - export BAKE_TARGET="$(printf "%s" "$(echo "$FLAVOR" | sed 's/[[:punct:]]//g')")"
     - echo "BAKE_TARGET=$BAKE_TARGET"
     - cd ./schedmd/slurm/$VERSION/
     - docker buildx bake --print $BAKE_TARGET
+    - docker buildx bake --progress=plain $BAKE_TARGET
     - docker buildx bake --progress=plain --push $BAKE_TARGET
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - schedmd/slurm/$VERSION/docker-bake.hcl
         - schedmd/slurm/$VERSION/$FLAVOR/*
-
-release:
-  stage: release
-  extends: .slurm-release
-  script:
-    - cd ./schedmd/slurm/$VERSION/$FLAVOR
-    - |
-      set -x
-      for daemon in $(sed -n 's/^FROM[[:space:]]\+[^ ]\+[[:space:]]\+AS[[:space:]]\+\([^ ]\+\)$/\1/p' Dockerfile | grep -Eo "^s(lurm.*|ack)d$") ; do
-        version="$(grep -Eo "SLURM_VERSION=[^ ]+" Dockerfile | head -n1 | cut -d= -f2)"
-        image="${daemon}:${version}-${FLAVOR}"
-        docker pull "${DOCKER_SOURCE_REGISTRY}/${image}"
-      done
-    - export BAKE_TARGET="$(printf "%s" "$(echo "$FLAVOR" | sed 's/[[:punct:]]//g')")"
-    - echo "BAKE_TARGET=$BAKE_TARGET"
-    - cd ../
-    - docker buildx bake --print $BAKE_TARGET
-    - docker buildx bake --progress=plain --push $BAKE_TARGET
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
