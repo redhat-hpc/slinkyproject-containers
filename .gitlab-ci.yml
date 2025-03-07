@@ -50,6 +50,15 @@ variables:
         FLAVOR:
           - rockylinux9
           - ubuntu24.04
+  before_script:
+    - docker info
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - |
+      if [ -z $DOCKER_REGISTRY_PASSWORD ] || [ -z $DOCKER_REGISTRY ] || [ -z $DOCKER_REGISTRY_USER ]; then
+        echo "Runner lacks login info. Either environment variables are not defined, or runner is on an unprotected branch/tag.";
+        exit 1;
+      fi
+    - echo "$DOCKER_REGISTRY_PASSWORD" | docker login $DOCKER_REGISTRY -u $DOCKER_REGISTRY_USER --password-stdin
 
 build:
   stage: build
@@ -83,12 +92,6 @@ release:
   stage: release
   extends: .slurm-release
   script:
-    - |
-      if [ -z $DOCKER_REGISTRY_PASSWORD ] || [ -z $DOCKER_REGISTRY ] || [ -z $DOCKER_REGISTRY_USER ]; then
-        echo "Runner lacks login info. Either environment variables are not defined, or runner is on an unprotected branch/tag.";
-        exit 1;
-      fi
-    - echo "$DOCKER_REGISTRY_PASSWORD" | docker login $DOCKER_REGISTRY -u $DOCKER_REGISTRY_USER --password-stdin
     - cd ./schedmd/slurm/$VERSION/$FLAVOR
     - |
       set -x
