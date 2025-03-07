@@ -33,6 +33,11 @@ target "_default" {
   name = format_name("${stage}", "${SLURM_VERSION}", "${flavor}")
   context = "${flavor}/"
   tags = [
+    format_tag("${DOCKER_BAKE_REGISTRY}", "${stage}",
+      "${length(regexall("^(?<major>[0-9]+)\\.(?<minor>[0-9]+)\\.(?<patch>[0-9]+)(?:-(?<rev>.+))?$", "${SLURM_VERSION}")) > 0 ?
+        "${format("%s.%s", "${regex("^(?<major>[0-9]+)\\.(?<minor>[0-9]+)\\.(?<patch>[0-9]+)(?:-(?<rev>.+))?$", "${SLURM_VERSION}")["major"]}", "${regex("^(?<major>[0-9]+)\\.(?<minor>[0-9]+)\\.(?<patch>[0-9]+)(?:-(?<rev>.+))?$", "${SLURM_VERSION}")["minor"]}")}" :
+        "${SLURM_VERSION}"}",
+      "${flavor}", "${DOCKER_BAKE_SUFFIX}"),
     format_tag("${DOCKER_BAKE_REGISTRY}", "${stage}", "${SLURM_VERSION}", "${flavor}", "${DOCKER_BAKE_SUFFIX}"),
   ]
   matrix = {

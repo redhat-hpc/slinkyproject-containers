@@ -41,7 +41,7 @@ variables:
 .slurm-release:
   variables:
     DOCKER_SOURCE_REGISTRY: $CI_REGISTRY_IMAGE
-    DOCKER_TARGET_REGISTRY: $DOCKER_REGISTRY
+    DOCKER_BAKE_REGISTRY: $DOCKER_REGISTRY
   parallel:
     matrix:
       - VERSION:
@@ -103,13 +103,12 @@ release:
         version="$(grep -Eo "SLURM_VERSION=[^ ]+" Dockerfile | head -n1 | cut -d= -f2)"
         image="${daemon}:${version}-${FLAVOR}"
         docker pull "${DOCKER_SOURCE_REGISTRY}/${image}"
-        docker tag "${DOCKER_SOURCE_REGISTRY}/${image}" "${DOCKER_TARGET_REGISTRY}/${image}"
-        docker push "${DOCKER_TARGET_REGISTRY}/${image}"
-
-        imageLatest="${daemon}:${VERSION}-${FLAVOR}"
-        docker tag "${DOCKER_TARGET_REGISTRY}/${image}" "${DOCKER_TARGET_REGISTRY}/${imageLatest}"
-        docker push "${DOCKER_TARGET_REGISTRY}/${imageLatest}"
       done
+    - export BAKE_TARGET="$(printf "%s" "$(echo "$FLAVOR" | sed 's/[[:punct:]]//g')")"
+    - echo "BAKE_TARGET=$BAKE_TARGET"
+    - cd ../
+    - docker buildx bake --print $BAKE_TARGET
+    - docker buildx bake --progress=plain --push $BAKE_TARGET
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
