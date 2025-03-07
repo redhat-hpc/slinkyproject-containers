@@ -49,6 +49,7 @@ target "_default" {
     ]
   }
   args = {
+    SLURM_VERSION = "${SLURM_VERSION}"
     DEBUG = "${DEBUG}"
   }
   target = stage
