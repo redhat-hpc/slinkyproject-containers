@@ -73,6 +73,8 @@ build:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
         - schedmd/slurm/$VERSION/$FLAVOR/*
+    - if: $VERSION == 'master'
+      allow_failure: true
 
 push:
   stage: build
