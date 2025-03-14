@@ -74,7 +74,10 @@ build:
       changes:
         - schedmd/slurm/$VERSION/docker-bake.hcl
         - schedmd/slurm/$VERSION/$FLAVOR/*
-    - if: $VERSION == 'master'
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $VERSION == 'master'
+      changes:
+        - schedmd/slurm/$VERSION/docker-bake.hcl
+        - schedmd/slurm/$VERSION/$FLAVOR/*
       allow_failure: true
 
 release:
