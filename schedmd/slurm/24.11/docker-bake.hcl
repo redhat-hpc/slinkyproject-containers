@@ -47,6 +47,7 @@ target "_default" {
       "slurmdbd",
       "slurmrestd",
       "sackd",
+      "login",
     ]
     flavor = [
       "rockylinux9",
@@ -72,6 +73,7 @@ target "rockylinux9" {
       "slurmdbd",
       "slurmrestd",
       "sackd",
+      "login",
     ]
     flavor = [
       "rockylinux9",
@@ -91,6 +93,7 @@ target "ubuntu2404" {
       "slurmdbd",
       "slurmrestd",
       "sackd",
+      "login",
     ]
     flavor = [
       "ubuntu24.04",

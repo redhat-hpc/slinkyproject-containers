@@ -92,6 +92,14 @@ groupadd --system --gid=${SLURM_USER_GID} ${SLURM_USER}
 useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} --shell=/usr/sbin/nologin ${SLURM_USER}
 EOR
 
+RUN <<EOR
+# Remove Users
+set -xeuo pipefail
+for user in $(ls /home/); do
+  userdel --remove $user
+done
+EOR
+
 COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 
 RUN <<EOR
@@ -352,4 +360,49 @@ EOR
 
 COPY files/sackd/ /
 
+ENTRYPOINT ["entrypoint.sh"]
+
+################################################################################
+# NAME : login
+# BUILD: `docker build --target=login -t [<registry>/]login:<tag> .`
+################################################################################
+FROM sackd AS login
+
+SHELL ["bash", "-c"]
+
+# OCI Annotations
+# https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+LABEL \
+  org.opencontainers.image.title="Slurm Login Container" \
+  org.opencontainers.image.description="An authenticated environment to submit Slurm workload from." \
+  org.opencontainers.image.documentation="https://slurm.schedmd.com/quickstart_admin.html#login"
+
+# HasRequiredLabel requirement from Red Hat OpenShift Software Certification
+# https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+LABEL \
+  name="Slurm Login Container" \
+  summary="An authenticated environment to submit Slurm workload from." \
+  description="An authenticated environment to submit Slurm workload from."
+
+USER root
+WORKDIR /tmp/
+
+# Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
+RUN <<EOR
+# Install Packages
+set -xeuo pipefail
+dnf -q makecache --refresh
+dnf -q -y install --setopt='install_weak_deps=False' \
+  supervisor \
+  openssh-server \
+  authconfig sssd sssd-ldap dbus-daemon
+rm *.rpm && dnf clean all
+# Configure
+authconfig --enablemkhomedir --updateall
+rm -f /etc/ssh/ssh_host_*
+EOR
+
+COPY files/login/ /
+
+EXPOSE 22/tcp
 ENTRYPOINT ["entrypoint.sh"]
