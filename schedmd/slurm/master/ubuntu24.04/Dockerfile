@@ -93,12 +93,14 @@ COPY --from=build /tmp/*.deb /tmp/
 
 RUN <<EOR
 # Install Dependencies
+set -xeuo pipefail
 apt-get -qq update
 # For: Helm Chart
 apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
 # Init System
-apt-get -qq -y install --no-install-recommends tini
+apt-get -qq -y install --no-install-recommends \
+  tini
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
@@ -167,7 +169,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -210,7 +212,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -256,7 +258,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmdbd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
@@ -297,7 +299,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmrestd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
@@ -339,7 +341,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
-apt-get -qq -y install --fix-broken \
+apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \

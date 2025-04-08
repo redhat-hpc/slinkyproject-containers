@@ -39,7 +39,7 @@ else
   tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C $SLURM_DIR
 fi
 ## Patch
-find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d slurm -i
+find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d $SLURM_DIR -i
 ## Build
 SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*(-[[:alnum:]]*)?" | head -n1 | sed -E 's/-[[:alnum:]]+$//g')"
 if [ "$SLURM_DIR" != "$SLURM_RPM_DIR" ]; then
@@ -102,11 +102,12 @@ dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
-# Init System
-dnf -q -y install --setopt='install_weak_deps=False' tini
 # For: Helm Chart
 dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
+# Init System
+dnf -q -y install --setopt='install_weak_deps=False' \
+  tini
 dnf clean all
 EOR
 

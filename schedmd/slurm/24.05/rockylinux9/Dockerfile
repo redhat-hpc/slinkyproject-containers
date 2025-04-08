@@ -101,11 +101,12 @@ dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
-# Init System
-dnf -q -y install --setopt='install_weak_deps=False' tini
 # For: Helm Chart
 dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
+# Init System
+dnf -q -y install --setopt='install_weak_deps=False' \
+  tini
 dnf clean all
 EOR
 
