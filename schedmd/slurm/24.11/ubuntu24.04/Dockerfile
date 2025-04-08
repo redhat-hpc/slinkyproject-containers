@@ -178,6 +178,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+EXPOSE 6817/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmctld", "-D"]
 
 ################################################################################
@@ -224,6 +225,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+EXPOSE 6818/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmd", "-D"]
 
 ################################################################################
@@ -265,6 +267,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+EXPOSE 6819/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmdbd", "-D"]
 
 ################################################################################
@@ -306,6 +309,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+EXPOSE 6820/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmrestd"]
 CMD ["0.0.0.0:6820"]
 

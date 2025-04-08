@@ -179,6 +179,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
+EXPOSE 6817/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmctld", "-D"]
 
 ################################################################################
@@ -220,6 +221,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
+EXPOSE 6818/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmd", "-D"]
 
 ################################################################################
@@ -258,6 +260,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
+EXPOSE 6819/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmdbd", "-D"]
 
 ################################################################################
@@ -296,6 +299,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
+EXPOSE 6820/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmrestd"]
 CMD ["0.0.0.0:6820"]
 
