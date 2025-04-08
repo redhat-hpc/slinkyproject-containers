@@ -10,7 +10,7 @@ variable "DEBUG" {
 }
 
 variable "SLURM_VERSION" {
-  default = "24.11.3"
+  default = "24.11.4"
 }
 
 function "format_name" {
