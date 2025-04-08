@@ -102,7 +102,7 @@ apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
 # Init System
 apt-get -qq -y install --no-install-recommends \
-  tini
+  supervisor tini
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
@@ -180,8 +180,10 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+COPY files/slurmctld/ /
+
 EXPOSE 6817/tcp
-ENTRYPOINT ["tini", "-g", "--", "slurmctld", "-D"]
+ENTRYPOINT ["entrypoint.sh"]
 
 ################################################################################
 # SLURM: slurmd
@@ -227,8 +229,10 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
+COPY files/slurmd/ /
+
 EXPOSE 6818/tcp
-ENTRYPOINT ["tini", "-g", "--", "slurmd", "-D"]
+ENTRYPOINT ["entrypoint.sh"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -355,18 +359,6 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-RUN <<EOR
-# Create sackd Entrypoint Wrapper
-set -xeuo pipefail
-cat <<EOF | tee /usr/local/bin/sackd.sh
-#!/usr/bin/env bash
-# SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
-# SPDX-License-Identifier: Apache-2.0
-set -euo pipefail
-sackd "\$@" 1>/proc/1/fd/1 2>/proc/1/fd/2
-exec sleep infinity
-EOF
-chmod +x /usr/local/bin/sackd.sh
-EOR
+COPY files/sackd/ /
 
-ENTRYPOINT ["tini", "-g", "--", "sackd.sh"]
+ENTRYPOINT ["entrypoint.sh"]

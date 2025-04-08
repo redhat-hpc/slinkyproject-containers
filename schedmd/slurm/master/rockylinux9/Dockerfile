@@ -107,7 +107,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
 # Init System
 dnf -q -y install --setopt='install_weak_deps=False' \
-  tini
+  supervisor tini
 dnf clean all
 EOR
 
@@ -180,8 +180,10 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
+COPY files/slurmctld/ /
+
 EXPOSE 6817/tcp
-ENTRYPOINT ["tini", "-g", "--", "slurmctld", "-D"]
+ENTRYPOINT ["entrypoint.sh"]
 
 ################################################################################
 # SLURM: slurmd
@@ -222,8 +224,10 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
+COPY files/slurmd/ /
+
 EXPOSE 6818/tcp
-ENTRYPOINT ["tini", "-g", "--", "slurmd", "-D"]
+ENTRYPOINT ["entrypoint.sh"]
 
 ################################################################################
 # SLURM: slurmdbd
@@ -338,20 +342,10 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
 rm *.rpm && dnf clean all
+# Prepare Directories
+mkdir -p /run/slurm/
 EOR
 
-RUN <<EOR
-# Create sackd Entrypoint Wrapper
-set -xeuo pipefail
-cat <<EOF | tee /usr/local/bin/sackd.sh
-#!/usr/bin/env bash
-# SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
-# SPDX-License-Identifier: Apache-2.0
-set -euo pipefail
-sackd "\$@" 1>/proc/1/fd/1 2>/proc/1/fd/2
-exec sleep infinity
-EOF
-chmod +x /usr/local/bin/sackd.sh
-EOR
+COPY files/sackd/ /
 
-ENTRYPOINT ["tini", "-g", "--", "sackd.sh"]
+ENTRYPOINT ["entrypoint.sh"]
