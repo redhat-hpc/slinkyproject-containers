@@ -27,6 +27,7 @@ RUN <<EOR
 # Download and Build Slurm
 set -xeuo pipefail
 apt-get -qq update
+apt-get -qq -y upgrade
 apt-get -qq -y install --no-install-recommends \
   build-essential fakeroot devscripts equivs curl
 ## Download
@@ -95,6 +96,7 @@ RUN <<EOR
 # Install Dependencies
 set -xeuo pipefail
 apt-get -qq update
+apt-get -qq -y upgrade
 # For: Helm Chart
 apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping

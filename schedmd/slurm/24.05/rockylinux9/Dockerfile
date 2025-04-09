@@ -24,7 +24,7 @@ COPY patches/ patches/
 RUN <<EOR
 # Download and Build Slurm
 set -xeuo pipefail
-dnf -q makecache --refresh
+dnf -q -y upgrade --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
 dnf -q config-manager --enable crb
@@ -96,7 +96,7 @@ COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 RUN <<EOR
 # Install Dependencies
 set -xeuo pipefail
-dnf -q makecache --refresh
+dnf -q -y upgrade --refresh
 # For: Slurm RPM Dependencies
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
