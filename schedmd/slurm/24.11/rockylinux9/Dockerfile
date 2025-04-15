@@ -222,6 +222,10 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
 rm *.rpm && dnf clean all
+# Configure
+cp -v /etc/nsswitch.conf{,.bak}
+sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
+sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 EOR
 
 COPY files/slurmd/ /
