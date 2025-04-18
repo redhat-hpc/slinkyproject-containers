@@ -113,6 +113,9 @@ dnf config-manager --enable crb
 # For: Helm Chart
 dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
+# Miscellaneous
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ncurses
 # Init System
 dnf -q -y install --setopt='install_weak_deps=False' \
   supervisor tini
