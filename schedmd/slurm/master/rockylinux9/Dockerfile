@@ -395,11 +395,16 @@ dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   openssh-server \
   dbus-daemon \
-  authconfig sssd sssd-ad sssd-ldap sssd-dbus
+  authselect sssd sssd-ad sssd-ldap sssd-dbus
 rm *.rpm && dnf clean all
 # Configure
-authconfig --enablemkhomedir --updateall
+mkdir -p /etc/authselect
+authselect select sssd with-mkhomedir --force
 rm -f /etc/ssh/ssh_host_*
+# Remove Packages
+dnf -q -y remove \
+  authselect
+dnf -q -y autoremove
 EOR
 
 COPY files/login/ /
