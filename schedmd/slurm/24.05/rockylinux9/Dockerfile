@@ -24,10 +24,11 @@ COPY patches/ patches/
 RUN <<EOR
 # Download and Build Slurm
 set -xeuo pipefail
-dnf -q -y upgrade --refresh
+dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
 dnf -q config-manager --enable crb
+dnf -q -y upgrade --refresh
 ## Download
 SLURM_DIR="slurm-${SLURM_VERSION}"
 mkdir -p $SLURM_DIR
@@ -96,11 +97,12 @@ COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 RUN <<EOR
 # Install Dependencies
 set -xeuo pipefail
-dnf -q -y upgrade --refresh
+dnf -q makecache --refresh
 # For: Slurm RPM Dependencies
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
+dnf -q -y upgrade --refresh
 # For: Helm Chart
 dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
