@@ -393,9 +393,9 @@ RUN <<EOR
 set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
-  supervisor \
   openssh-server \
-  authconfig sssd sssd-ad sssd-ldap dbus-daemon
+  dbus-daemon \
+  authconfig sssd sssd-ad sssd-ldap sssd-dbus
 rm *.rpm && dnf clean all
 # Configure
 authconfig --enablemkhomedir --updateall

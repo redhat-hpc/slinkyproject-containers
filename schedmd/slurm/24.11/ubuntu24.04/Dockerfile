@@ -409,7 +409,8 @@ set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   openssh-server \
-  sssd sssd-ad sssd-ldap libpam-sss libnss-sss dbus-daemon
+  dbus-daemon \
+  sssd sssd-ad sssd-ldap sssd-dbus libpam-sss libnss-sss
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Configure
 pam-auth-update --enable mkhomedir --force
