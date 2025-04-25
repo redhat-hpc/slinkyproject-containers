@@ -5,46 +5,62 @@
 ################################################################################
 
 ARG SLURM_VERSION=24.11.4
+ARG SLURM_DIR="slurm-${SLURM_VERSION}"
+ARG PARENT_IMAGE=rockylinux:9
 
 ################################################################################
-ARG PARENT_IMAGE=rockylinux:9
+FROM alpine:latest AS slurm-src
+
+ARG SLURM_VERSION
+ARG SLURM_DIR
+
+WORKDIR /workspace/
+
+RUN <<EOR
+# Download Slurm
+set -xeuo pipefail
+apk add --no-cache curl tar
+mkdir -p ${SLURM_DIR}
+if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
+  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
+  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C ${SLURM_DIR}
+else
+  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
+  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C ${SLURM_DIR}
+fi
+EOR
+
+################################################################################
 FROM ${PARENT_IMAGE} AS build
 
 SHELL ["bash", "-c"]
 
 ARG SLURM_VERSION
 ENV SLURM_VERSION=${SLURM_VERSION}
+ARG SLURM_DIR
 
 USER root
 WORKDIR /tmp/
+
+COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
 COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
 RUN <<EOR
-# Download and Build Slurm
+# Patch and Build Slurm
 set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
-  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release curl-minimal
+  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
 dnf -q config-manager --enable crb
 dnf -q -y upgrade --refresh
-## Download
-SLURM_DIR="slurm-${SLURM_VERSION}"
-mkdir -p $SLURM_DIR
-if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
-  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
-  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C $SLURM_DIR
-else
-  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
-  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C $SLURM_DIR
-fi
 ## Patch
-find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d $SLURM_DIR -i
+find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d ${SLURM_DIR} -i
 ## Build
 SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*(-[[:alnum:]]*)?" | head -n1 | sed -E 's/-[[:alnum:]]+$//g')"
-if [ "$SLURM_DIR" != "$SLURM_RPM_DIR" ]; then
-  mv $SLURM_DIR $SLURM_RPM_DIR
+if [ "${SLURM_DIR}" != "$SLURM_RPM_DIR" ]; then
+  mv ${SLURM_DIR} $SLURM_RPM_DIR
 fi
 rm -f ${SLURM_RPM_DIR}.tar.bz2
 tar -caf ${SLURM_RPM_DIR}.tar.bz2 $SLURM_RPM_DIR

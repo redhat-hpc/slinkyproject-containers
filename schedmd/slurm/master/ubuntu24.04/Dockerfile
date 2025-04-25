@@ -5,9 +5,32 @@
 ################################################################################
 
 ARG SLURM_VERSION=master
+ARG SLURM_DIR="slurm-${SLURM_VERSION}"
+ARG PARENT_IMAGE=ubuntu:24.04
 
 ################################################################################
-ARG PARENT_IMAGE=ubuntu:24.04
+FROM alpine:latest AS slurm-src
+
+ARG SLURM_VERSION
+ARG SLURM_DIR
+
+WORKDIR /workspace/
+
+RUN <<EOR
+# Download Slurm
+set -xeuo pipefail
+apk add --no-cache curl tar
+mkdir -p ${SLURM_DIR}
+if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
+  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
+  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C ${SLURM_DIR}
+else
+  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
+  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C ${SLURM_DIR}
+fi
+EOR
+
+################################################################################
 FROM ${PARENT_IMAGE} AS build
 
 SHELL ["bash", "-c"]
@@ -16,35 +39,28 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ARG SLURM_VERSION
 ENV SLURM_VERSION=${SLURM_VERSION}
+ARG SLURM_DIR
 
 USER root
 WORKDIR /tmp/
+
+COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
 COPY patches/ patches/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
 RUN <<EOR
-# Download and Build Slurm
+# Patch and Build Slurm
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y upgrade
 apt-get -qq -y install --no-install-recommends \
-  build-essential fakeroot devscripts equivs curl
-## Download
-SLURM_DIR="slurm-${SLURM_VERSION}"
-mkdir -p $SLURM_DIR
-if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
-  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
-  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C $SLURM_DIR
-else
-  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
-  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C $SLURM_DIR
-fi
+  build-essential fakeroot devscripts equivs
 ## Patch
-find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d $SLURM_DIR -i
+find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d ${SLURM_DIR} -i
 ## Build
 mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' ${SLURM_DIR}/debian/control
-( cd $SLURM_DIR && debuild -b -uc -us >/dev/null )
+( cd ${SLURM_DIR} && debuild -b -uc -us >/dev/null )
 ## Cleanup
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
