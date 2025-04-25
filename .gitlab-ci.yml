@@ -13,9 +13,9 @@ stages:
   - release
 
 default:
-  image: docker:27.3.0
+  image: docker:28.1
   services:
-    - docker:27.3.0-rc.1-dind
+    - docker:28.1-dind
   before_script:
     - docker info
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
 // SPDX-License-Identifier: Apache-2.0
 
+################################################################################
+
 variable "DOCKER_BAKE_REGISTRY" {}
 
 variable "DOCKER_BAKE_SUFFIX" {}
@@ -31,6 +33,8 @@ function "format_tag" {
   params = [registry, stage, version, flavor, suffix]
   result = format("%s:%s", join("/", compact([registry, stage])), join("-", compact([version, flavor, suffix])))
 }
+
+################################################################################
 
 group "default" {
   targets = [
@@ -183,4 +187,117 @@ target "login_ubuntu2404" {
     format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
     format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${SLURM_VERSION}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
   ]
+}
+
+################################################################################
+
+variable "GIT_REPO" {
+  default = "git@gitlab.com:SchedMD/dev/slurm.git"
+}
+
+variable "GIT_BRANCH" {
+  default = "${slurm_version("${SLURM_VERSION}")}"
+}
+
+group "dev" {
+  targets = [
+    "rockylinux9-dev",
+    "ubuntu2404-dev",
+  ]
+}
+
+target "_dev" {
+  contexts = {
+    "slurm-src" = "target:slurm-src-dev"
+  }
+  ssh = [
+    # ssh-add ~/.ssh/id_ed25519
+    { id = "default" },
+  ]
+}
+
+target "slurm-src-dev" {
+  dockerfile = "Dockerfile.dev"
+  args = {
+    GIT_REPO = "${GIT_REPO}"
+    GIT_BRANCH = "${GIT_BRANCH}"
+  }
+  ssh = [
+    # ssh-add ~/.ssh/id_ed25519
+    { id = "default" },
+  ]
+  # Ref: https://github.com/moby/buildkit/issues/4294
+  # Ref: https://github.com/moby/moby/issues/1996#issuecomment-172606763
+  # Ref: https://github.com/moby/moby/issues/1996#issuecomment-1152463036
+  no-cache-filter = ["slurm-src"]
+}
+
+group "rockylinux9-dev" {
+  targets = [
+    "slurmctld_rockylinux9-dev",
+    "slurmd_rockylinux9-dev",
+    "slurmdbd_rockylinux9-dev",
+    "slurmrestd_rockylinux9-dev",
+    "sackd_rockylinux9-dev",
+    "login_rockylinux9-dev",
+  ]
+}
+
+target "slurmctld_rockylinux9-dev" {
+  inherits = ["slurmctld_rockylinux9", "_dev"]
+}
+
+target "slurmd_rockylinux9-dev" {
+  inherits = ["slurmd_rockylinux9", "_dev"]
+}
+
+target "slurmdbd_rockylinux9-dev" {
+  inherits = ["slurmdbd_rockylinux9", "_dev"]
+}
+
+target "slurmrestd_rockylinux9-dev" {
+  inherits = ["slurmrestd_rockylinux9", "_dev"]
+}
+
+target "sackd_rockylinux9-dev" {
+  inherits = ["sackd_rockylinux9", "_dev"]
+}
+
+target "login_rockylinux9-dev" {
+  inherits = ["login_rockylinux9", "_dev"]
+}
+
+group "ubuntu2404-dev" {
+  targets = [
+    "slurmctld_ubuntu2404-dev",
+    "slurmd_ubuntu2404-dev",
+    "slurmdbd_ubuntu2404-dev",
+    "slurmrestd_ubuntu2404-dev",
+    "sackd_ubuntu2404-dev",
+    "login_ubuntu2404-dev",
+  ]
+}
+
+target "slurmctld_ubuntu2404-dev" {
+  inherits = ["slurmctld_ubuntu2404", "_dev"]
+}
+
+target "slurmd_ubuntu2404-dev" {
+  inherits = ["slurmd_ubuntu2404", "_dev"]
+}
+
+target "slurmdbd_ubuntu2404-dev" {
+  inherits = ["slurmdbd_ubuntu2404", "_dev"]
+}
+
+target "slurmrestd_ubuntu2404-dev" {
+  inherits = ["slurmrestd_ubuntu2404", "_dev"]
+}
+
+target "sackd_ubuntu2404-dev" {
+  inherits = ["sackd_ubuntu2404", "_dev"]
+}
+
+target "login_ubuntu2404-dev" {
+  inherits = ["login_ubuntu2404", "_dev"]
 }
