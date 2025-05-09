@@ -4,7 +4,7 @@
 
 ################################################################################
 
-ARG SLURM_VERSION=24.11.4
+ARG SLURM_VERSION=24.11.5
 ARG SLURM_DIR="slurm-${SLURM_VERSION}"
 ARG PARENT_IMAGE=rockylinux:9
 

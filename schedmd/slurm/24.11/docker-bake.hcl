@@ -10,7 +10,7 @@ variable "DEBUG" {
 }
 
 variable "SLURM_VERSION" {
-  default = "24.11.4"
+  default = "24.11.5"
 }
 
 function "slurm_semantic_version" {
