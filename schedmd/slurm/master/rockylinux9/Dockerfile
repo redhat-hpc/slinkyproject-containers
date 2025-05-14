@@ -245,6 +245,7 @@ RUN <<EOR
 set -xeuo pipefail
 dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
+  gawk \
   ./slurm-devel-[0-9]*.rpm \
   ./slurm-libpmi-[0-9]*.rpm \
   ./slurm-pam_slurm-[0-9]*.rpm \
