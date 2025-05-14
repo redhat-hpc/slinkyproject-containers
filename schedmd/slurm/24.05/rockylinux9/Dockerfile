@@ -58,7 +58,7 @@ dnf -q -y upgrade --refresh
 ## Patch
 find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d ${SLURM_DIR} -i
 ## Build
-SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*(-[[:alnum:]]*)?" | head -n1 | sed -E 's/-[[:alnum:]]+$//g')"
+SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+(-[[:alnum:]]+)?" | head -n1 | sed -E 's/-[[:digit:]]+$//g')"
 if [ "${SLURM_DIR}" != "$SLURM_RPM_DIR" ]; then
   mv ${SLURM_DIR} $SLURM_RPM_DIR
 fi
