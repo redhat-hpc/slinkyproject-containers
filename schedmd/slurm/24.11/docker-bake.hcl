@@ -141,7 +141,30 @@ group "default" {
   ]
 }
 
+group "core" {
+  targets = [
+    "rockylinux9-core",
+    "ubuntu2404-core",
+  ]
+}
+
+group "extras" {
+  targets = [
+    "rockylinux9-extras",
+    "ubuntu2404-extras",
+  ]
+}
+
+################################################################################
+
 group "rockylinux9" {
+  targets = [
+    "rockylinux9-core",
+    "rockylinux9-extras",
+  ]
+}
+
+group "rockylinux9-core" {
   targets = [
     "slurmctld_rockylinux9",
     "slurmd_rockylinux9",
@@ -213,7 +236,52 @@ target "login_rockylinux9" {
   ]
 }
 
+################################################################################
+
+group "rockylinux9-extras" {
+  targets = [
+    "slurmd_pyxis_rockylinux9",
+    "login_pyxis_rockylinux9",
+  ]
+}
+
+target "slurmd_pyxis_rockylinux9" {
+  inherits = ["_slurmd", "_rockylinux9"]
+  dockerfile = "Dockerfile.pyxis"
+  target = "slurmd-pyxis"
+  tags = [
+    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+  ]
+  contexts = {
+    "ghcr.io/slinkyproject/slurmd:24.11-rockylinux9" = "target:slurmd_rockylinux9"
+  }
+}
+
+target "login_pyxis_rockylinux9" {
+  inherits = ["_login", "_rockylinux9"]
+  dockerfile = "Dockerfile.pyxis"
+  target = "login-pyxis"
+  tags = [
+    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+  ]
+  contexts = {
+    "ghcr.io/slinkyproject/slurmd:24.11-rockylinux9" = "target:slurmd_rockylinux9"
+    "ghcr.io/slinkyproject/login:24.11-rockylinux9" = "target:login_rockylinux9"
+  }
+}
+
+################################################################################
+
 group "ubuntu2404" {
+  targets = [
+    "ubuntu2404-core",
+    "ubuntu2404-extras",
+  ]
+}
+
+group "ubuntu2404-core" {
   targets = [
     "slurmctld_ubuntu2404",
     "slurmd_ubuntu2404",
@@ -283,4 +351,40 @@ target "login_ubuntu2404" {
     format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
     format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
   ]
+}
+
+################################################################################
+
+group "ubuntu2404-extras" {
+  targets = [
+    "slurmd_pyxis_ubuntu2404",
+    "login_pyxis_ubuntu2404",
+  ]
+}
+
+target "slurmd_pyxis_ubuntu2404" {
+  inherits = ["_slurmd", "_ubuntu2404"]
+  dockerfile = "Dockerfile.pyxis"
+  target = "slurmd-pyxis"
+  tags = [
+    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+  ]
+  contexts = {
+    "ghcr.io/slinkyproject/slurmd:24.11-ubuntu24.04" = "target:slurmd_ubuntu2404"
+  }
+}
+
+target "login_pyxis_ubuntu2404" {
+  inherits = ["_login", "_ubuntu2404"]
+  dockerfile = "Dockerfile.pyxis"
+  target = "login-pyxis"
+  tags = [
+    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+  ]
+  contexts = {
+    "ghcr.io/slinkyproject/slurmd:24.11-ubuntu24.04" = "target:slurmd_ubuntu2404"
+    "ghcr.io/slinkyproject/login:24.11-ubuntu24.04" = "target:login_ubuntu2404"
+  }
 }
