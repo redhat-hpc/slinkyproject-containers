@@ -105,7 +105,7 @@ apt-get -qq -y install --no-install-recommends \
 apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-ENV KUBECTL_VERSION=1.32
+ENV KUBECTL_VERSION=1.33
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN <<EOR

@@ -123,7 +123,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 dnf clean all
 EOR
 
-ENV KUBECTL_VERSION=1.32
+ENV KUBECTL_VERSION=1.33
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN <<EOR
