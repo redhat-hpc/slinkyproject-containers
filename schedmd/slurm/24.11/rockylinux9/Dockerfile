@@ -111,9 +111,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
 dnf -q -y upgrade --refresh
-# For: Helm Chart
-dnf -q -y install --setopt='install_weak_deps=False' \
-  rsync gettext iputils
 # Miscellaneous
 dnf -q -y install --setopt='install_weak_deps=False' \
   ncurses
@@ -288,6 +285,9 @@ dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
+# For: Helm Chart
+dnf -q -y install --setopt='install_weak_deps=False' \
+  rsync gettext iputils
 rm *.rpm && dnf clean all
 # Prepare Directories
 mkdir -p /run/slurm/

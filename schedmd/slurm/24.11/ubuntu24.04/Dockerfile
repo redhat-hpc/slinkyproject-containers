@@ -104,9 +104,6 @@ RUN <<EOR
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y upgrade
-# For: Helm Chart
-apt-get -qq -y install --no-install-recommends \
-  rsync gettext-base iputils-ping
 # Init System
 apt-get -qq -y install --no-install-recommends \
   supervisor tini
@@ -298,6 +295,9 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
+# For: Helm Chart
+apt-get -qq -y install --no-install-recommends \
+  rsync gettext-base iputils-ping
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
