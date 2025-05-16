@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
 // SPDX-License-Identifier: Apache-2.0
 
+################################################################################
+
 variable "DOCKER_BAKE_REGISTRY" {}
 
 variable "DOCKER_BAKE_SUFFIX" {}
@@ -32,6 +34,110 @@ function "format_tag" {
   result = format("%s:%s", join("/", compact([registry, stage])), join("-", compact([version, flavor, suffix])))
 }
 
+################################################################################
+
+target "_slurm" {
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.authors" = "slinky@schedmd.com"
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/documentation.html"
+    "org.opencontainers.image.license" = "GPL-2.0-or-later WITH openssl-exception"
+    "org.opencontainers.image.vendor" = "SchedMD LLC."
+    "org.opencontainers.image.version" = "${SLURM_VERSION}"
+    "org.opencontainers.image.source" = "https://github.com/SlinkyProject/containers"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "vendor" = "SchedMD LLC."
+    "version" = "${SLURM_VERSION}"
+    "release" = "https://github.com/SlinkyProject/containers"
+  }
+}
+
+target "_slurmctld" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm Control Plane"
+    "org.opencontainers.image.description" = "slurmctld - The central management daemon of Slurm"
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/slurmctld.html"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm Control Plane"
+    "summary" = "slurmctld - The central management daemon of Slurm"
+    "description" = "slurmctld - The central management daemon of Slurm"
+  }
+}
+
+target "_slurmd" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm Worker Agent"
+    "org.opencontainers.image.description" = "slurmd - The compute node daemon for Slurm"
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/slurmd.html"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm Worker Agent"
+    "summary" = "slurmd - The compute node daemon for Slurm"
+    "description" = "slurmd - The compute node daemon for Slurm"
+  }
+}
+
+target "_slurmdbd" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm Database Agent"
+    "org.opencontainers.image.description" = "slurmdbd - Slurm Database Daemon"
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/slurmdbd.html"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm Database Agent"
+    "summary" = "slurmdbd - Slurm Database Daemon"
+    "description" = "slurmdbd - Slurm Database Daemon"
+  }
+}
+
+target "_slurmrestd" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm REST API Agent"
+    "org.opencontainers.image.description" = "slurmrestd - Interface to Slurm via REST API"
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/slurmrestd.html"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm REST API Agent"
+    "summary" = "slurmrestd - Interface to Slurm via REST API"
+    "description" = "slurmrestd - Interface to Slurm via REST API"
+  }
+}
+
+target "_sackd" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm Auth/Cred Server"
+    "org.opencontainers.image.description" = "sackd - Slurm Auth and Cred Kiosk Daemon"
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/sackd.html"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm Auth/Cred Server"
+    "summary" = "sackd - Slurm Auth and Cred Kiosk Daemon"
+    "description" = "sackd - Slurm Auth and Cred Kiosk Daemon"
+  }
+}
+
+target "_login" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm Login Container"
+    "org.opencontainers.image.description" = "An authenticated environment to submit Slurm workload from."
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/quickstart_admin.html#login"
+    # Ref: https://access.redhat.com/documentation/en-us/red_hat_software_certification/2024/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm Login Container"
+    "summary" = "An authenticated environment to submit Slurm workload from."
+    "description" = "An authenticated environment to submit Slurm workload from."
+  }
+}
+
+################################################################################
+
 group "default" {
   targets = [
     "rockylinux9",
@@ -59,7 +165,7 @@ target "_rockylinux9" {
 }
 
 target "slurmctld_rockylinux9" {
-  inherits = ["_rockylinux9"]
+  inherits = ["_slurmctld", "_rockylinux9"]
   target = "slurmctld"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmctld", "${slurm_version("${SLURM_VERSION}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
@@ -68,7 +174,7 @@ target "slurmctld_rockylinux9" {
 }
 
 target "slurmd_rockylinux9" {
-  inherits = ["_rockylinux9"]
+  inherits = ["_slurmd", "_rockylinux9"]
   target = "slurmd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd", "${slurm_version("${SLURM_VERSION}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
@@ -77,7 +183,7 @@ target "slurmd_rockylinux9" {
 }
 
 target "slurmdbd_rockylinux9" {
-  inherits = ["_rockylinux9"]
+  inherits = ["_slurmdbd", "_rockylinux9"]
   target = "slurmdbd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmdbd", "${slurm_version("${SLURM_VERSION}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
@@ -86,7 +192,7 @@ target "slurmdbd_rockylinux9" {
 }
 
 target "slurmrestd_rockylinux9" {
-  inherits = ["_rockylinux9"]
+  inherits = ["_slurmrestd", "_rockylinux9"]
   target = "slurmrestd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmrestd", "${slurm_version("${SLURM_VERSION}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
@@ -95,7 +201,7 @@ target "slurmrestd_rockylinux9" {
 }
 
 target "sackd_rockylinux9" {
-  inherits = ["_rockylinux9"]
+  inherits = ["_sackd", "_rockylinux9"]
   target = "sackd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "sackd", "${slurm_version("${SLURM_VERSION}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
@@ -104,7 +210,7 @@ target "sackd_rockylinux9" {
 }
 
 target "login_rockylinux9" {
-  inherits = ["_rockylinux9"]
+  inherits = ["_login", "_rockylinux9"]
   target = "login"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version("${SLURM_VERSION}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
@@ -132,7 +238,7 @@ target "_ubuntu2404" {
 }
 
 target "slurmctld_ubuntu2404" {
-  inherits = ["_ubuntu2404"]
+  inherits = ["_slurmctld", "_ubuntu2404"]
   target = "slurmctld"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmctld", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
@@ -141,7 +247,7 @@ target "slurmctld_ubuntu2404" {
 }
 
 target "slurmd_ubuntu2404" {
-  inherits = ["_ubuntu2404"]
+  inherits = ["_slurmd", "_ubuntu2404"]
   target = "slurmd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
@@ -150,7 +256,7 @@ target "slurmd_ubuntu2404" {
 }
 
 target "slurmdbd_ubuntu2404" {
-  inherits = ["_ubuntu2404"]
+  inherits = ["_slurmdbd", "_ubuntu2404"]
   target = "slurmdbd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmdbd", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
@@ -159,7 +265,7 @@ target "slurmdbd_ubuntu2404" {
 }
 
 target "slurmrestd_ubuntu2404" {
-  inherits = ["_ubuntu2404"]
+  inherits = ["_slurmrestd", "_ubuntu2404"]
   target = "slurmrestd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "slurmrestd", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
@@ -168,7 +274,7 @@ target "slurmrestd_ubuntu2404" {
 }
 
 target "sackd_ubuntu2404" {
-  inherits = ["_ubuntu2404"]
+  inherits = ["_sackd", "_ubuntu2404"]
   target = "sackd"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "sackd", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
@@ -177,7 +283,7 @@ target "sackd_ubuntu2404" {
 }
 
 target "login_ubuntu2404" {
-  inherits = ["_ubuntu2404"]
+  inherits = ["_login", "_ubuntu2404"]
   target = "login"
   tags = [
     format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version("${SLURM_VERSION}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
