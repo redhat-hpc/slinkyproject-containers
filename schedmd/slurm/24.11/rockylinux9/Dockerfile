@@ -123,25 +123,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 dnf clean all
 EOR
 
-ENV KUBECTL_VERSION=1.33
-
-# Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-RUN <<EOR
-# Install kubectl
-set -xeuo pipefail
-dnf -q makecache --refresh
-cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/rpm/
-enabled=1
-gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/rpm/repodata/repomd.xml.key
-EOF
-dnf -q -y install --setopt='install_weak_deps=False' kubectl
-dnf clean all
-EOR
-
 ## START DEBUG SECTION ###
 ARG DEBUG=0
 RUN <<EOR
@@ -279,6 +260,25 @@ SHELL ["bash", "-c"]
 
 USER root
 WORKDIR /tmp/
+
+ENV KUBECTL_VERSION=1.33
+
+# Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
+RUN <<EOR
+# Install kubectl
+set -xeuo pipefail
+dnf -q makecache --refresh
+cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/rpm/repodata/repomd.xml.key
+EOF
+dnf -q -y install --setopt='install_weak_deps=False' kubectl
+dnf clean all
+EOR
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
 RUN <<EOR
