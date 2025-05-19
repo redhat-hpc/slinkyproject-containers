@@ -4,7 +4,12 @@
 
 ################################################################################
 
-FROM alpine:latest AS runner
+FROM alpine:latest AS slurm-src
+
+ARG SLURM_VERSION=master
+ARG SLURM_DIR=slurm-${SLURM_VERSION}
+ARG GIT_REPO=git@gitlab.com:SchedMD/dev/slurm.git
+ARG GIT_BRANCH=master
 
 WORKDIR /workspace/
 
@@ -16,15 +21,6 @@ install -m 0600 -d ~/.ssh
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 EOR
-
-################################################################################
-
-FROM runner AS slurm-src
-
-ARG SLURM_VERSION=master
-ARG SLURM_DIR=slurm-${SLURM_VERSION}
-ARG GIT_REPO=git@gitlab.com:SchedMD/dev/slurm.git
-ARG GIT_BRANCH=master
 
 # NOTE:
 # - if `Permission denied (publickey)`, ssh-agent may lack an identity.
