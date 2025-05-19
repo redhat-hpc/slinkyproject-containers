@@ -115,19 +115,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 dnf clean all
 EOR
 
-## START DEBUG SECTION ###
-ARG DEBUG=0
-RUN <<EOR
-# For: Development and Debugging
-set -xeuo pipefail
-if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
-  dnf -q -y install sudo
-  echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
-  dnf clean all
-fi
-EOR
-### END DEBUG SECTION ###
-
 ################################################################################
 # SLURM: slurmctld
 # BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`

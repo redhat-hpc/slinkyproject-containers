@@ -9,10 +9,6 @@ variable "DOCKER_BAKE_REGISTRY" {
 
 variable "DOCKER_BAKE_SUFFIX" {}
 
-variable "DEBUG" {
-  default = "0"
-}
-
 slurm_version = "24.05.8"
 
 function "slurm_semantic_version" {
@@ -145,7 +141,6 @@ target "_rockylinux9" {
   context = "rockylinux9"
   args = {
     SLURM_VERSION = "${slurm_version}"
-    DEBUG = "${DEBUG}"
   }
 }
 
@@ -208,7 +203,6 @@ target "_ubuntu2404" {
   context = "ubuntu24.04"
   args = {
     SLURM_VERSION = "${slurm_version}"
-    DEBUG = "${DEBUG}"
   }
 }
 
