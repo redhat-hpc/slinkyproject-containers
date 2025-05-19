@@ -3,7 +3,9 @@
 
 ################################################################################
 
-variable "DOCKER_BAKE_REGISTRY" {}
+variable "DOCKER_BAKE_REGISTRY" {
+  default = "ghcr.io/slinkyproject"
+}
 
 variable "DOCKER_BAKE_SUFFIX" {}
 
