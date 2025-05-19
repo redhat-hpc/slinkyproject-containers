@@ -16,18 +16,15 @@ ARG SLURM_DIR
 
 WORKDIR /workspace/
 
+ADD https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz ${SLURM_VERSION}.tar.gz
+
 RUN <<EOR
-# Download Slurm
+# Unpack Slurm Source
 set -xeuo pipefail
-apk add --no-cache curl tar
+apk add --no-cache tar
 mkdir -p ${SLURM_DIR}
-if [ $(curl -s -Iw '%{http_code}' -o /dev/null https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2) -eq 200 ]; then
-  curl -s -O https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2
-  tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C ${SLURM_DIR}
-else
-  curl -s -L -H "Accept: application/vnd.github+json" -O https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz
-  tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C ${SLURM_DIR}
-fi
+tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C ${SLURM_DIR}
+rm ${SLURM_VERSION}.tar.gz
 EOR
 
 ################################################################################
