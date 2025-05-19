@@ -29,8 +29,4 @@ ARG GIT_BRANCH=master
 # NOTE:
 # - if `Permission denied (publickey)`, ssh-agent may lack an identity.
 # - Add identity to ssh-agent with `ssh-add ~/.ssh/id_ed25519`.
-RUN --mount=type=ssh <<EOR
-# Download Slurm
-set -xeuo pipefail
-git clone --branch=${GIT_BRANCH} --depth=1 ${GIT_REPO} ${SLURM_DIR}
-EOR
+ADD ${GIT_REPO}#${GIT_BRANCH} ${SLURM_DIR}

@@ -328,10 +328,6 @@ target "slurm-src-dev" {
     # ssh-add ~/.ssh/id_ed25519
     { id = "default" },
   ]
-  # Ref: https://github.com/moby/buildkit/issues/4294
-  # Ref: https://github.com/moby/moby/issues/1996#issuecomment-172606763
-  # Ref: https://github.com/moby/moby/issues/1996#issuecomment-1152463036
-  no-cache-filter = ["slurm-src"]
 }
 
 group "rockylinux9-dev" {
