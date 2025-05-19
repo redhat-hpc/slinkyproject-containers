@@ -50,7 +50,6 @@ COPY patches/ patches/
 RUN <<EOR
 # Patch and Build Slurm
 set -xeuo pipefail
-dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
 dnf -q config-manager --enable crb
@@ -97,7 +96,6 @@ COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 RUN <<EOR
 # Install Dependencies
 set -xeuo pipefail
-dnf -q makecache --refresh
 # For: Slurm RPM Dependencies
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
@@ -118,7 +116,6 @@ ENV KUBECTL_VERSION=1.33
 RUN <<EOR
 # Install kubectl
 set -xeuo pipefail
-dnf -q makecache --refresh
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -137,7 +134,6 @@ RUN <<EOR
 # For: Development and Debugging
 set -xeuo pipefail
 if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
-  dnf -q makecache --refresh
   dnf -q -y install sudo
   echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
   dnf clean all
@@ -160,7 +156,6 @@ WORKDIR /tmp/
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
-dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmctld-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
@@ -187,7 +182,6 @@ WORKDIR /tmp/
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
-dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-devel-[0-9]*.rpm \
   ./slurm-libpmi-[0-9]*.rpm \
@@ -221,7 +215,6 @@ WORKDIR /tmp/
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
-dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmdbd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
@@ -246,7 +239,6 @@ WORKDIR /tmp/
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
-dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmrestd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
@@ -272,7 +264,6 @@ WORKDIR /tmp/
 RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
-dnf -q makecache --refresh
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm

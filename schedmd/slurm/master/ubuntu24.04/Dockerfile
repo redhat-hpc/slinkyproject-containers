@@ -115,8 +115,7 @@ ARG DEBUG=0
 RUN <<EOR
 # For: Development and Debugging
 set -xeuo pipefail
-if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then
-  apt-get -qq update
+if [ "$DEBUG" = true ] || [ "$DEBUG" = 1 ]; then  apt-get -qq update
   apt-get -qq -y install --no-install-recommends sudo
   echo "${SLURM_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/slurm
   apt-get clean && rm -rf /var/lib/apt/lists/*
