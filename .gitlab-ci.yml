@@ -32,6 +32,7 @@ variables:
     matrix:
       - VERSION:
           - master
+          - '25.05'
           - '24.11'
           - '24.05'
         FLAVOR:
@@ -45,6 +46,7 @@ variables:
   parallel:
     matrix:
       - VERSION:
+          - '25.05'
           - '24.11'
           - '24.05'
         FLAVOR:
