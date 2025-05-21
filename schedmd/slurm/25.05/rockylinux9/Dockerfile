@@ -61,6 +61,9 @@ fi
 rm -f ${SLURM_RPM_DIR}.tar.bz2
 tar -caf ${SLURM_RPM_DIR}.tar.bz2 $SLURM_RPM_DIR
 dnf -q -y builddep -D '_with_slurmrestd 1' -D '_with_jwt 1' -D '_with_yaml 1' -D '_with_numa 1' ${SLURM_RPM_DIR}/slurm.spec
+## FIXME: remove package installations after RPM spec makes them dependencies
+dnf -q -y install --setopt='install_weak_deps=False' \
+  kernel-headers dbus-devel
 rpmbuild -ta --with slurmrestd --with jwt ${SLURM_RPM_DIR}.tar.bz2 >/dev/null
 ## Cleanup
 dnf clean all
