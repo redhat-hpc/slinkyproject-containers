@@ -291,6 +291,7 @@ set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   openssh-server \
   dbus-daemon \
+  oddjob-mkhomedir \
   authselect sssd sssd-ad sssd-ldap sssd-dbus
 rm *.rpm && dnf clean all
 # Configure
