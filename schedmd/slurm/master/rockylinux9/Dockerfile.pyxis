@@ -70,6 +70,7 @@ dnf -q -y update
 dnf -q -y install --setopt='install_weak_deps=False' \
   ca-certificates \
   bash-completion \
+  fuse-overlayfs pigz squashfuse \
   ./*.rpm
 rm *.rpm && dnf clean all
 # Configure
@@ -86,6 +87,17 @@ ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}
 ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pytorch.sh /etc/enroot/hooks.d/50-slurm-pytorch.sh
 
 RUN chmod 755 -R /etc/enroot/hooks.d/
+
+ADD https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo /etc/yum.repos.d/nvidia-container-toolkit.repo
+
+# Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-dnf-rhel-centos-fedora-amazon-linux
+RUN <<EOR
+# Install Nvidia Container Toolkit
+set -xeuo pipefail
+dnf -q -y install --setopt='install_weak_deps=False' \
+  nvidia-container-toolkit
+dnf clean all
+EOR
 
 ################################################################################
 # SLURM: login-pyxis
@@ -112,6 +124,7 @@ dnf -q -y update
 dnf -q -y install --setopt='install_weak_deps=False' \
   ca-certificates \
   bash-completion \
+  fuse-overlayfs pigz squashfuse \
   ./*.rpm
 rm *.rpm && dnf clean all
 # Configure
@@ -128,3 +141,14 @@ ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}
 ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pytorch.sh /etc/enroot/hooks.d/50-slurm-pytorch.sh
 
 RUN chmod 755 -R /etc/enroot/hooks.d/
+
+ADD https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo /etc/yum.repos.d/nvidia-container-toolkit.repo
+
+# Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-dnf-rhel-centos-fedora-amazon-linux
+RUN <<EOR
+# Install Nvidia Container Toolkit
+set -xeuo pipefail
+dnf -q -y install --setopt='install_weak_deps=False' \
+  nvidia-container-toolkit
+dnf clean all
+EOR
