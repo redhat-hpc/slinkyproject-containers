@@ -9,6 +9,7 @@ export SLURMD_OPTIONS="${SLURMD_OPTIONS:-} $*"
 
 function main() {
 	mkdir -p /run/slurm/
+	mkdir -p /var/spool/slurmd/
 
 	exec supervisord -c /etc/supervisor/supervisord.conf
 }

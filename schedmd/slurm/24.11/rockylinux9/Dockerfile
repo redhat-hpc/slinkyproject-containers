@@ -165,6 +165,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-[0-9]*.rpm
 rm *.rpm && dnf clean all
 # Configure
+mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
 sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf

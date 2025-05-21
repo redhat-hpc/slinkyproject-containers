@@ -169,6 +169,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd_[0-9]*.deb
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Configure
+mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
 sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf

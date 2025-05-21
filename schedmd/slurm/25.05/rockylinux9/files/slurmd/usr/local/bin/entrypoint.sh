@@ -94,6 +94,7 @@ function addConfItem() {
 
 function main() {
 	mkdir -p /run/slurm/
+	mkdir -p /var/spool/slurmd/
 
 	local coreSpecCount=0
 	if ((POD_CPUS > 0)); then
