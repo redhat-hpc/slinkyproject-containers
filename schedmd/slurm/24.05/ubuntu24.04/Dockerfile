@@ -274,6 +274,8 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-sackd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Prepare Directories
+mkdir -p /run/slurm/
 EOR
 
 COPY files/sackd/ /

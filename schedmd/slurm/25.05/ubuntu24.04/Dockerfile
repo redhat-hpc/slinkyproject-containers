@@ -283,6 +283,8 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Prepare Directories
+mkdir -p /run/slurm/
 EOR
 
 COPY files/sackd/ /

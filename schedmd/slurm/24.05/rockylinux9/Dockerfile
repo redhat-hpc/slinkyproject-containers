@@ -253,6 +253,8 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
 rm *.rpm && dnf clean all
+# Prepare Directories
+mkdir -p /run/slurm/
 EOR
 
 COPY files/sackd/ /
