@@ -108,6 +108,22 @@ apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
+FROM base AS base-extra
+
+SHELL ["bash", "-c"]
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN <<EOR
+# Install Extra Packages
+set -xeuo pipefail
+apt-get -qq update
+apt-get -qq -y install --no-install-recommends \
+  openmpi-bin
+apt-get clean && rm -rf /var/lib/apt/lists/*
+EOR
+
+################################################################################
 # SLURM: slurmctld
 # BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
 ################################################################################
@@ -143,7 +159,7 @@ ENTRYPOINT ["entrypoint.sh"]
 # SLURM: slurmd
 # BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
-FROM base AS slurmd
+FROM base-extra AS slurmd
 
 SHELL ["bash", "-c"]
 
@@ -241,7 +257,7 @@ CMD ["0.0.0.0:6820"]
 # SLURM: sackd
 # BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
-FROM base AS sackd
+FROM base-extra AS sackd
 
 SHELL ["bash", "-c"]
 

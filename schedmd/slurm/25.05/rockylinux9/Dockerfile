@@ -134,6 +134,19 @@ dnf clean all
 EOR
 
 ################################################################################
+FROM base AS base-extra
+
+SHELL ["bash", "-c"]
+
+RUN <<EOR
+# Install Extra Packages
+set -xeuo pipefail
+dnf -q -y install --setopt='install_weak_deps=False' \
+  openmpi
+dnf clean all
+EOR
+
+################################################################################
 # SLURM: slurmctld
 # BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
 ################################################################################
@@ -163,7 +176,7 @@ ENTRYPOINT ["entrypoint.sh"]
 # SLURM: slurmd
 # BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
-FROM base AS slurmd
+FROM base-extra AS slurmd
 
 SHELL ["bash", "-c"]
 
@@ -247,7 +260,7 @@ CMD ["0.0.0.0:6820"]
 # SLURM: sackd
 # BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
-FROM base AS sackd
+FROM base-extra AS sackd
 
 SHELL ["bash", "-c"]
 
