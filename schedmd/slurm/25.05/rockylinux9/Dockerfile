@@ -66,10 +66,19 @@ dnf -q -y builddep \
   -D '_with_yaml 1' \
   -D '_with_hwloc --with-hwloc' \
   -D '_with_numa 1' \
+  -D '_with_pmix --with-pmix' \
+  -D '_with_ucx --with-ucx' \
+  -D '_with_lua yes' \
+  -D '_with_freeipmi 1' \
+  -D '_with_hdf5 yes' \
+  -D '_with_libcurl yes' \
   ${SLURM_RPM_DIR}/slurm.spec
-## FIXME: remove package installations after RPM spec makes them dependencies
+## FIXME: remove package installations after RPM spec makes them dependencies: cgroups/v2
 dnf -q -y install --setopt='install_weak_deps=False' \
   kernel-headers dbus-devel
+## FIXME: remove package installations after RPM spec makes them dependencies: --with-hdf5
+dnf -q -y install --setopt='install_weak_deps=False' \
+  hdf5-devel
 rpmbuild -ta --with slurmrestd --with jwt ${SLURM_RPM_DIR}.tar.bz2 >/dev/null
 ## Cleanup
 dnf clean all
