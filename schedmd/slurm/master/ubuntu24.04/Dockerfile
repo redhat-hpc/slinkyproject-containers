@@ -266,23 +266,24 @@ ARG DEBIAN_FRONTEND=noninteractive
 USER root
 WORKDIR /tmp/
 
-ENV KUBECTL_VERSION=1.33
+ADD https://dl.k8s.io/release/stable.txt kubernetes_stable.txt
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN <<EOR
 # Install kubectl
 set -xeuo pipefail
 apt-get -qq update
+VERSION="$(cat kubernetes_stable.txt | grep -Eo '^v[0-9]+\.[0-9]+')"
 apt-get -qq -y install --no-install-recommends \
   apt-transport-https ca-certificates curl gnupg
 mkdir -p -m 755 /etc/apt/keyrings
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/${VERSION}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${VERSION}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list
 chmod 644 /etc/apt/sources.list.d/kubernetes.list
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends kubectl
-apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.txt && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install

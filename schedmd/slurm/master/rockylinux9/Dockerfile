@@ -267,22 +267,23 @@ SHELL ["bash", "-c"]
 USER root
 WORKDIR /tmp/
 
-ENV KUBECTL_VERSION=1.33
+ADD https://dl.k8s.io/release/stable.txt kubernetes_stable.txt
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN <<EOR
 # Install kubectl
 set -xeuo pipefail
+VERSION="$(cat kubernetes_stable.txt | grep -Eo '^v[0-9]+\.[0-9]+')"
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/${VERSION}/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/rpm/repodata/repomd.xml.key
+gpgkey=https://pkgs.k8s.io/core:/stable:/${VERSION}/rpm/repodata/repomd.xml.key
 EOF
 dnf -q -y install --setopt='install_weak_deps=False' kubectl
-dnf clean all
+rm *.txt && dnf clean all
 EOR
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
