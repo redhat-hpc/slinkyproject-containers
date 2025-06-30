@@ -317,10 +317,6 @@ rm *.rpm && dnf clean all
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force
 rm -f /etc/ssh/ssh_host_*
-# Remove Packages
-dnf -q -y remove \
-  authselect
-dnf -q -y autoremove
 EOR
 
 COPY files/login/ /

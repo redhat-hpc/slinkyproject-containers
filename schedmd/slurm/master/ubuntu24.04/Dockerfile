@@ -334,10 +334,6 @@ rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force
 rm -f /etc/ssh/ssh_host_*
-# Remove Packages
-apt-get -qq -y remove \
-  authselect
-apt-get -qq -y autoremove
 EOR
 
 COPY files/login/ /
