@@ -9,7 +9,7 @@ variable "DOCKER_BAKE_REGISTRY" {
 
 variable "DOCKER_BAKE_SUFFIX" {}
 
-slurm_version = "24.11.5"
+slurm_version = "24.11.6"
 
 function "slurm_semantic_version" {
   params = [version]
