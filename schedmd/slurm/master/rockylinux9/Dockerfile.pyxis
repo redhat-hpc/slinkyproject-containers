@@ -12,8 +12,6 @@ FROM ghcr.io/slinkyproject/slurmd:master-rockylinux9 AS download
 
 SHELL ["bash", "-c"]
 
-ARG DEBIAN_FRONTEND=noninteractive
-
 USER root
 WORKDIR /tmp/
 
