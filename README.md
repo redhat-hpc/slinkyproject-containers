@@ -6,6 +6,17 @@ OCI artifacts are pushed to public registries:
 
 - [GitHub][github-registry]
 
+## Support and Development
+
+Feature requests, code contributions, and bug reports are welcome!
+
+Github/Gitlab submitted issues and PRs/MRs are handled on a best effort basis.
+
+The SchedMD official issue tracker is at <https://support.schedmd.com/>.
+
+To schedule a demo or simply to reach out, please
+[contact SchedMD][contact-schedmd].
+
 ## License
 
 Copyright (C) SchedMD LLC.
@@ -21,6 +32,7 @@ specific language governing permissions and limitations under the License.
 
 <!-- Links -->
 
+[contact-schedmd]: https://www.schedmd.com/slurm-resources/contact-schedmd/
 [github-registry]: https://github.com/orgs/SlinkyProject/packages
 [oci]: https://opencontainers.org/
 [schedmd]: https://www.schedmd.com/
