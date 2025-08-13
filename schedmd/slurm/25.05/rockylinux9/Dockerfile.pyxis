@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ################################################################################
-
-ARG ENROOT_VERSION=3.5.0
-ARG PYXIS_VERSION=0.20.0
-
-################################################################################
 FROM ghcr.io/slinkyproject/slurmd:25.05-rockylinux9 AS download
 
 SHELL ["bash", "-c"]
@@ -15,16 +10,30 @@ SHELL ["bash", "-c"]
 USER root
 WORKDIR /tmp/
 
-ARG ENROOT_VERSION
-ENV ENROOT_VERSION="${ENROOT_VERSION}"
-
-ADD https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot-${ENROOT_VERSION}-1.el8.x86_64.rpm enroot-${ENROOT_VERSION}-1.el8.x86_64.rpm
-ADD https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot+caps-${ENROOT_VERSION}-1.el8.x86_64.rpm enroot+caps-${ENROOT_VERSION}-1.el8.x86_64.rpm
-
-ARG PYXIS_VERSION
-ENV PYXIS_VERSION="${PYXIS_VERSION}"
-
-ADD https://github.com/NVIDIA/pyxis/archive/refs/tags/v${PYXIS_VERSION}.tar.gz pyxis-v${PYXIS_VERSION}.tar.gz
+RUN <<EOR
+# Download Latest Versions
+set -xeuo pipefail
+dnf -q -y update
+dnf -q -y install --setopt='install_weak_deps=False' \
+  ca-certificates wget jq
+dnf clean all
+# Determine Latest Versions
+ENROOT_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/enroot/releases/latest | jq -r '.tag_name')"
+ENROOT_VERSION="${ENROOT_VERSION/#v}"
+PYXIS_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/pyxis/releases/latest | jq -r '.tag_name')"
+PYXIS_VERSION="${PYXIS_VERSION/#v}"
+# Download
+wget -N https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot-${ENROOT_VERSION}-1.el8.x86_64.rpm
+wget -N https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot+caps-${ENROOT_VERSION}-1.el8.x86_64.rpm
+wget -N -O /usr/share/bash-completion/completions/enroot https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/bash_completion
+wget -N -P /etc/enroot/hooks.d/ \
+  https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-mig-config.sh \
+  https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-sharp.sh \
+  https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pmi.sh \
+  https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pytorch.sh
+chmod 755 -R /etc/enroot/hooks.d/
+wget -N -O pyxis.tar.gz https://github.com/NVIDIA/pyxis/archive/refs/tags/v${PYXIS_VERSION}.tar.gz
+EOR
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-rpm-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
@@ -37,10 +46,11 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   git gcc make libcap libtool automake libmd-devel \
   rpm-build 'dnf-command(builddep)' \
   tar
-tar -zxvf pyxis-v${PYXIS_VERSION}.tar.gz
-cd pyxis-${PYXIS_VERSION}
-make rpm
 dnf clean all
+mkdir pyxis
+tar -zxvf pyxis.tar.gz -C pyxis --strip-components=1
+cd pyxis
+make rpm
 EOR
 
 ################################################################################
@@ -57,6 +67,8 @@ ENV PYXIS_VERSION="${PYXIS_VERSION}"
 
 COPY --from=download /tmp/*.rpm ./
 COPY --from=download /tmp/**/*.rpm ./
+COPY --from=download /etc/enroot/hooks.d/* /etc/enroot/hooks.d/
+COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-completion/completions/
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-rpm-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
@@ -79,14 +91,6 @@ ln -s /usr/share/pyxis/pyxis.conf /etc/slurm/plugstack.conf.d/pyxis.conf
 # Fix NVIDIA proc mount for GPUs
 sed -i '2i mount -t proc none /proc 2>/dev/null || true' /usr/local/bin/entrypoint.sh
 EOR
-
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/bash_completion /usr/share/bash-completion/completions/enroot
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-mig-config.sh /etc/enroot/hooks.d/50-mig-config.sh
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-sharp.sh /etc/enroot/hooks.d/50-sharp.sh
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pmi.sh /etc/enroot/hooks.d/50-slurm-pmi.sh
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pytorch.sh /etc/enroot/hooks.d/50-slurm-pytorch.sh
-
-RUN chmod 755 -R /etc/enroot/hooks.d/
 
 ADD https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo /etc/yum.repos.d/nvidia-container-toolkit.repo
 
@@ -113,6 +117,8 @@ ENV PYXIS_VERSION="${PYXIS_VERSION}"
 
 COPY --from=download /tmp/*.rpm ./
 COPY --from=download /tmp/**/*.rpm ./
+COPY --from=download /etc/enroot/hooks.d/* /etc/enroot/hooks.d/
+COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-completion/completions/
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-rpm-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
@@ -135,14 +141,6 @@ ln -s /usr/share/pyxis/pyxis.conf /etc/slurm/plugstack.conf.d/pyxis.conf
 # Fix NVIDIA proc mount for GPUs
 sed -i '2i mount -t proc none /proc 2>/dev/null || true' /usr/local/bin/entrypoint.sh
 EOR
-
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/bash_completion /usr/share/bash-completion/completions/enroot
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-mig-config.sh /etc/enroot/hooks.d/50-mig-config.sh
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-sharp.sh /etc/enroot/hooks.d/50-sharp.sh
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pmi.sh /etc/enroot/hooks.d/50-slurm-pmi.sh
-ADD https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-slurm-pytorch.sh /etc/enroot/hooks.d/50-slurm-pytorch.sh
-
-RUN chmod 755 -R /etc/enroot/hooks.d/
 
 ADD https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo /etc/yum.repos.d/nvidia-container-toolkit.repo
 
