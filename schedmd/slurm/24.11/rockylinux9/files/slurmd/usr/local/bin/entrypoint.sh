@@ -22,13 +22,15 @@ export POD_MEMORY="${POD_MEMORY:-0}"
 # Ref: https://slurm.schedmd.com/slurm.conf.html#OPT_CoreSpecCount
 # Ref: https://slurm.schedmd.com/core_spec.html
 function calculateCoreSpecCount() {
-	local coreSpecCount=0
+	local socketCount=0
 	local coreCount=0
-	local threadCount=0
+	local threadsPerCore=0
+	local coreSpecCount=0
 
-	coreCount="$(($(lscpu | gawk '/^Socket\(s\):/{ print $2 }') * $(lscpu | gawk '/^Core\(s\) per socket:/{ print $4 }')))"
-	threadCount="$(lscpu | gawk '/^Thread\(s\) per core:/{ print $4 }')"
-	coreSpecCount="$((coreCount - (POD_CPUS / threadCount)))"
+	socketCount="$(($(slurmd -C | grep -Eo "Boards=[0-9]+" | cut -d= -f2) * $(slurmd -C | grep -Eo "SocketsPerBoard=[0-9]+" | cut -d= -f2)))"
+	coreCount="$((socketCount * $(slurmd -C | grep -Eo "CoresPerSocket=[0-9]+" | cut -d= -f2)))"
+	threadsPerCore="$(slurmd -C | grep -Eo "ThreadsPerCore=[0-9]+" | cut -d= -f2)"
+	coreSpecCount="$((coreCount - (POD_CPUS / threadsPerCore)))"
 
 	if ((coreSpecCount > 0)); then
 		echo "$coreSpecCount"
@@ -48,8 +50,8 @@ function calculateMemSpecLimit() {
 	local memSpecLimit=0
 	local totalMemory=0
 
-	totalMemory="$(gawk '/^MemTotal:/{ print $2 }' /proc/meminfo)"
-	memSpecLimit="$(((totalMemory / 1024) - POD_MEMORY))"
+	totalMemory="$(slurmd -C | grep -Eo "RealMemory=[0-9]+" | cut -d= -f2)"
+	memSpecLimit="$((totalMemory - POD_MEMORY))"
 
 	if ((memSpecLimit > 0)); then
 		echo "$memSpecLimit"
