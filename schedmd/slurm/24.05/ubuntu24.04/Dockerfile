@@ -87,6 +87,7 @@ useradd --system --no-log-init --uid=${SLURM_USER_UID} --gid=${SLURM_USER_GID} -
 EOR
 
 COPY --from=build /tmp/*.deb /tmp/
+COPY --from=build /tmp/*.ddeb /tmp/
 
 RUN <<EOR
 # Install Dependencies
@@ -142,11 +143,14 @@ set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
+  ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmctld_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+  ./slurm-smd-slurmctld-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 COPY files/slurmctld/ /
@@ -177,11 +181,14 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-libnss-slurm_[0-9]*.deb \
+  ./slurm-smd-libnss-slurm-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-libpam-slurm-adopt_[0-9]*.deb \
   ./slurm-smd-libpmi2-0_[0-9]*.deb \
   ./slurm-smd-slurmd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+  ./slurm-smd-slurmd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Configure
 mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
@@ -215,8 +222,10 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmdbd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+  ./slurm-smd-slurmdbd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 EXPOSE 6819/tcp
@@ -243,8 +252,10 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmrestd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+  ./slurm-smd-slurmrestd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 EXPOSE 6820/tcp
@@ -271,10 +282,13 @@ set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-client_[0-9]*.deb \
+  ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+  ./slurm-smd-sackd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Prepare Directories
 mkdir -p /run/slurm/
 EOR
