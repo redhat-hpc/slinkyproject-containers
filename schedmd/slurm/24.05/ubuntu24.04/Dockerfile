@@ -153,7 +153,8 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-COPY files/slurmctld/ /
+COPY files/slurmctld/etc/supervisor/* /etc/supervisor/
+COPY files/slurmctld/usr/local/bin/* /usr/local/bin/
 
 EXPOSE 6817/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -196,7 +197,8 @@ sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 EOR
 
-COPY files/slurmd/ /
+COPY files/slurmd/etc/supervisor/* /etc/supervisor/
+COPY files/slurmd/usr/local/bin/* /usr/local/bin/
 
 EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -293,6 +295,7 @@ rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 mkdir -p /run/slurm/
 EOR
 
-COPY files/sackd/ /
+COPY files/sackd/etc/supervisor/* /etc/supervisor/
+COPY files/sackd/usr/local/bin/* /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]

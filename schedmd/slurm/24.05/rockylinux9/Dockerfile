@@ -166,7 +166,8 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-COPY files/slurmctld/ /
+COPY files/slurmctld/etc/supervisor/* /etc/supervisor/
+COPY files/slurmctld/usr/local/bin/* /usr/local/bin/
 
 EXPOSE 6817/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -200,7 +201,8 @@ sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 EOR
 
-COPY files/slurmd/ /
+COPY files/slurmd/etc/supervisor/* /etc/supervisor/
+COPY files/slurmd/usr/local/bin/* /usr/local/bin/
 
 EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -277,6 +279,7 @@ rm *.rpm && dnf clean all
 mkdir -p /run/slurm/
 EOR
 
-COPY files/sackd/ /
+COPY files/sackd/etc/supervisor/* /etc/supervisor/
+COPY files/sackd/usr/local/bin/* /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
