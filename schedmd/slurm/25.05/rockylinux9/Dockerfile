@@ -5,7 +5,7 @@
 ################################################################################
 
 ARG SLURM_VERSION=25.05-latest
-ARG SLURM_DIR="slurm-${SLURM_VERSION}"
+ARG SLURM_DIR=slurm
 ARG PARENT_IMAGE=rockylinux:9
 
 ################################################################################
@@ -13,18 +13,19 @@ FROM alpine:latest AS slurm-src
 
 ARG SLURM_VERSION
 ARG SLURM_DIR
+ARG SLURM_TAR="slurm-${SLURM_VERSION}"
 
 WORKDIR /workspace/
 
-ADD https://download.schedmd.com/slurm/${SLURM_DIR}.tar.bz2 ${SLURM_DIR}.tar.bz2
+ADD https://download.schedmd.com/slurm/${SLURM_TAR}.tar.bz2 ${SLURM_TAR}.tar.bz2
 
 RUN <<EOR
 # Unpack Slurm Source
 set -xeuo pipefail
 apk add --no-cache tar
 mkdir -p ${SLURM_DIR}
-tar --strip-components=1 -jxvf ${SLURM_DIR}.tar.bz2 -C ${SLURM_DIR}
-rm ${SLURM_DIR}.tar.bz2
+tar --strip-components=1 -jxvf ${SLURM_TAR}.tar.bz2 -C ${SLURM_DIR}
+rm ${SLURM_TAR}.tar.bz2
 EOR
 
 ################################################################################

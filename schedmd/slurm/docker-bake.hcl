@@ -9,7 +9,14 @@ variable "REGISTRY" {
 
 variable "SUFFIX" {}
 
-slurm_version = "24.05.8"
+################################################################################
+
+slurm_version = "master"
+slurm_dir = slurm_version(slurm_version)
+linux_flavor = "rockylinux9"
+context = "${slurm_dir}/${linux_flavor}"
+
+################################################################################
 
 function "slurm_semantic_version" {
   params = [version]
@@ -20,8 +27,8 @@ function "slurm_version" {
   params = [version]
   result = (
     length(regexall("^(?<major>[0-9]+)\\.(?<minor>[0-9]+)\\.(?<patch>[0-9]+)(?:-(?<rev>.+))?$", "${version}")) > 0
-      ? "${format("%s.%s", "${slurm_semantic_version("${version}")["major"]}", "${slurm_semantic_version("${version}")["minor"]}")}"
-      : "${version}"
+      ? format("%s.%s", "${slurm_semantic_version("${version}")["major"]}", "${slurm_semantic_version("${version}")["minor"]}")
+      : version
   )
 }
 
@@ -33,17 +40,20 @@ function "format_tag" {
 ################################################################################
 
 target "_slurm" {
+  args = {
+    SLURM_VERSION = slurm_version
+  }
   labels = {
     # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
     "org.opencontainers.image.authors" = "slinky@schedmd.com"
     "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/documentation.html"
     "org.opencontainers.image.license" = "GPL-2.0-or-later WITH openssl-exception"
     "org.opencontainers.image.vendor" = "SchedMD LLC."
-    "org.opencontainers.image.version" = "${slurm_version}"
+    "org.opencontainers.image.version" = slurm_version
     "org.opencontainers.image.source" = "https://github.com/SlinkyProject/containers"
     # Ref: https://docs.redhat.com/en/documentation/red_hat_software_certification/2025/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
     "vendor" = "SchedMD LLC."
-    "version" = "${slurm_version}"
+    "version" = slurm_version
     "release" = "https://github.com/SlinkyProject/containers"
   }
 }
@@ -118,135 +128,245 @@ target "_sackd" {
   }
 }
 
+target "_login" {
+  inherits = ["_slurm"]
+  labels = {
+    # Ref: https://github.com/opencontainers/image-spec/blob/v1.0/annotations.md
+    "org.opencontainers.image.title" = "Slurm Login Container"
+    "org.opencontainers.image.description" = "An authenticated environment to submit Slurm workload from."
+    "org.opencontainers.image.documentation" = "https://slurm.schedmd.com/quickstart_admin.html#login"
+    # Ref: https://docs.redhat.com/en/documentation/red_hat_software_certification/2025/html/red_hat_openshift_software_certification_policy_guide/assembly-requirements-for-container-images_openshift-sw-cert-policy-introduction#con-image-metadata-requirements_openshift-sw-cert-policy-container-images
+    "name" = "Slurm Login Container"
+    "summary" = "An authenticated environment to submit Slurm workload from."
+    "description" = "An authenticated environment to submit Slurm workload from."
+  }
+}
+
 ################################################################################
 
 group "default" {
   targets = [
-    "rockylinux9",
-    "ubuntu2404",
+    "core",
   ]
 }
 
-group "rockylinux9" {
+group "all" {
   targets = [
-    "slurmctld_rockylinux9",
-    "slurmd_rockylinux9",
-    "slurmdbd_rockylinux9",
-    "slurmrestd_rockylinux9",
-    "sackd_rockylinux9",
+    "core",
+    "extras",
   ]
 }
 
-target "_rockylinux9" {
-  context = "rockylinux9"
+group "core" {
+  targets = [
+    "slurmctld",
+    "slurmd",
+    "slurmdbd",
+    "slurmrestd",
+    "sackd",
+    "login",
+  ]
+}
+
+target "slurmctld" {
+  inherits = ["_slurmctld"]
+  context = context
+  target = "slurmctld"
+  tags = [
+    format_tag(REGISTRY, "slurmctld", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "slurmctld", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+target "slurmd" {
+  inherits = ["_slurmd"]
+  context = context
+  target = "slurmd"
+  tags = [
+    format_tag(REGISTRY, "slurmd", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "slurmd", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+target "slurmdbd" {
+  inherits = ["_slurmdbd"]
+  context = context
+  target = "slurmdbd"
+  tags = [
+    format_tag(REGISTRY, "slurmdbd", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "slurmdbd", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+target "slurmrestd" {
+  inherits = ["_slurmrestd"]
+  context = context
+  target = "slurmrestd"
+  tags = [
+    format_tag(REGISTRY, "slurmrestd", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "slurmrestd", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+target "sackd" {
+  inherits = ["_sackd"]
+  context = context
+  target = "sackd"
+  tags = [
+    format_tag(REGISTRY, "sackd", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "sackd", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+target "login" {
+  inherits = ["_login"]
+  context = context
+  target = "login"
+  tags = [
+    format_tag(REGISTRY, "login", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "login", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+group "extras" {
+  targets = [
+    "slurmd_pyxis",
+    "login_pyxis",
+  ]
+}
+
+target "_pyxis" {
+  context = context
+  dockerfile = "Dockerfile.pyxis"
   args = {
-    SLURM_VERSION = "${slurm_version}"
+    REGISTRY = REGISTRY
   }
 }
 
-target "slurmctld_rockylinux9" {
-  inherits = ["_slurmctld", "_rockylinux9"]
-  target = "slurmctld"
+target "slurmd_pyxis" {
+  inherits = ["_slurmd", "_pyxis"]
+  target = "slurmd-pyxis"
   tags = [
-    format_tag("${REGISTRY}", "slurmctld", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmctld", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
+    format_tag(REGISTRY, "slurmd-pyxis", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "slurmd-pyxis", slurm_version, linux_flavor, SUFFIX),
   ]
-}
-
-target "slurmd_rockylinux9" {
-  inherits = ["_slurmd", "_rockylinux9"]
-  target = "slurmd"
-  tags = [
-    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
-  ]
-}
-
-target "slurmdbd_rockylinux9" {
-  inherits = ["_slurmdbd", "_rockylinux9"]
-  target = "slurmdbd"
-  tags = [
-    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
-  ]
-}
-
-target "slurmrestd_rockylinux9" {
-  inherits = ["_slurmrestd", "_rockylinux9"]
-  target = "slurmrestd"
-  tags = [
-    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
-  ]
-}
-
-target "sackd_rockylinux9" {
-  inherits = ["_sackd", "_rockylinux9"]
-  target = "sackd"
-  tags = [
-    format_tag("${REGISTRY}", "sackd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "sackd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
-  ]
-}
-
-group "ubuntu2404" {
-  targets = [
-    "slurmctld_ubuntu2404",
-    "slurmd_ubuntu2404",
-    "slurmdbd_ubuntu2404",
-    "slurmrestd_ubuntu2404",
-    "sackd_ubuntu2404",
-  ]
-}
-
-target "_ubuntu2404" {
-  context = "ubuntu24.04"
-  args = {
-    SLURM_VERSION = "${slurm_version}"
+  contexts = {
+    format_tag(REGISTRY, "slurmd", slurm_version(slurm_version), linux_flavor, SUFFIX) = "target:slurmd"
+    format_tag(REGISTRY, "slurmd", slurm_version, linux_flavor, SUFFIX) = "target:slurmd"
   }
 }
 
-target "slurmctld_ubuntu2404" {
-  inherits = ["_slurmctld", "_ubuntu2404"]
-  target = "slurmctld"
+target "login_pyxis" {
+  inherits = ["_login", "_pyxis"]
+  target = "login-pyxis"
   tags = [
-    format_tag("${REGISTRY}", "slurmctld", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmctld", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag(REGISTRY, "login-pyxis", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "login-pyxis", slurm_version, linux_flavor, SUFFIX),
+  ]
+  contexts = {
+    format_tag(REGISTRY, "slurmd", slurm_version(slurm_version), linux_flavor, SUFFIX) = "target:slurmd"
+    format_tag(REGISTRY, "slurmd", slurm_version, linux_flavor, SUFFIX) = "target:slurmd"
+    format_tag(REGISTRY, "login", slurm_version(slurm_version), linux_flavor, SUFFIX) = "target:login"
+    format_tag(REGISTRY, "login", slurm_version, linux_flavor, SUFFIX) = "target:login"
+  }
+}
+
+################################################################################
+
+variable "GIT_REPO" {
+  default = "git@gitlab.com:SchedMD/dev/slurm.git"
+}
+
+variable "GIT_BRANCH" {
+  default = git_branch(slurm_version)
+}
+
+function "git_branch" {
+  params = [version]
+  result = (
+    length(regexall("^(?<major>[0-9]+)\\.(?<minor>[0-9]+)\\.(?<patch>[0-9]+)(?:-(?<rev>.+))?$", "${version}")) > 0
+      ? format("slurm-%s", slurm_version(version))
+      : version
+  )
+}
+
+target "_dev" {
+  contexts = {
+    "slurm-src" = "target:slurm-src-dev"
+  }
+  ssh = [
+    # ssh-add ~/.ssh/id_ed25519
+    { id = "default" },
   ]
 }
 
-target "slurmd_ubuntu2404" {
-  inherits = ["_slurmd", "_ubuntu2404"]
-  target = "slurmd"
-  tags = [
-    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
+target "slurm-src-dev" {
+  dockerfile = "Dockerfile.dev"
+  args = {
+    GIT_REPO = GIT_REPO
+    GIT_BRANCH = GIT_BRANCH
+  }
+}
+
+group "dev" {
+  targets = [
+    "core-dev",
   ]
 }
 
-target "slurmdbd_ubuntu2404" {
-  inherits = ["_slurmdbd", "_ubuntu2404"]
-  target = "slurmdbd"
-  tags = [
-    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
+group "all-dev" {
+  targets = [
+    "core-dev",
+    "extras-dev",
   ]
 }
 
-target "slurmrestd_ubuntu2404" {
-  inherits = ["_slurmrestd", "_ubuntu2404"]
-  target = "slurmrestd"
-  tags = [
-    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
+group "core-dev" {
+  targets = [
+    "slurmctld_dev",
+    "slurmd_dev",
+    "slurmdbd_dev",
+    "slurmrestd_dev",
+    "sackd_dev",
+    "login_dev",
   ]
 }
 
-target "sackd_ubuntu2404" {
-  inherits = ["_sackd", "_ubuntu2404"]
-  target = "sackd"
-  tags = [
-    format_tag("${REGISTRY}", "sackd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
-    format_tag("${REGISTRY}", "sackd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
+target "slurmctld_dev" {
+  inherits = ["slurmctld", "_dev"]
+}
+
+target "slurmd_dev" {
+  inherits = ["slurmd", "_dev"]
+}
+
+target "slurmdbd_dev" {
+  inherits = ["slurmdbd", "_dev"]
+}
+
+target "slurmrestd_dev" {
+  inherits = ["slurmrestd", "_dev"]
+}
+
+target "sackd_dev" {
+  inherits = ["sackd", "_dev"]
+}
+
+target "login_dev" {
+  inherits = ["login", "_dev"]
+}
+
+group "extras-dev" {
+  targets = [
+    "slurmd_pyxis_dev",
+    "login_pyxis_dev",
   ]
+}
+
+target "slurmd_pyxis_dev" {
+  inherits = ["slurmd_pyxis", "_dev"]
+}
+
+target "login_pyxis_dev" {
+  inherits = ["login_pyxis", "_dev"]
 }

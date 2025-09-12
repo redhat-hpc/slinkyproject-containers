@@ -5,7 +5,7 @@
 ################################################################################
 
 ARG SLURM_VERSION=master
-ARG SLURM_DIR="slurm-${SLURM_VERSION}"
+ARG SLURM_DIR=slurm
 ARG PARENT_IMAGE=ubuntu:24.04
 
 ################################################################################
@@ -13,18 +13,19 @@ FROM alpine:latest AS slurm-src
 
 ARG SLURM_VERSION
 ARG SLURM_DIR
+ARG SLURM_TAR="${SLURM_VERSION}"
 
 WORKDIR /workspace/
 
-ADD https://github.com/SchedMD/slurm/archive/${SLURM_VERSION}.tar.gz ${SLURM_VERSION}.tar.gz
+ADD https://github.com/SchedMD/slurm/archive/${SLURM_TAR}.tar.gz ${SLURM_VERSION}.tar.gz
 
 RUN <<EOR
 # Unpack Slurm Source
 set -xeuo pipefail
 apk add --no-cache tar
 mkdir -p ${SLURM_DIR}
-tar --strip-components=1 -zxvf ${SLURM_VERSION}.tar.gz -C ${SLURM_DIR}
-rm ${SLURM_VERSION}.tar.gz
+tar --strip-components=1 -zxvf ${SLURM_TAR}.tar.gz -C ${SLURM_DIR}
+rm ${SLURM_TAR}.tar.gz
 EOR
 
 ################################################################################

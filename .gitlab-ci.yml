@@ -41,7 +41,6 @@ variables:
 
 .slurm-release:
   variables:
-    DOCKER_SOURCE_REGISTRY: $CI_REGISTRY_IMAGE
     REGISTRY: $DOCKER_REGISTRY
   parallel:
     matrix:
@@ -66,20 +65,18 @@ build:
   stage: build
   extends: .slurm
   script:
-    - export BAKE_TARGET="$(printf "%s" "$(echo "$FLAVOR" | sed 's/[[:punct:]]//g')")"
-    - echo "BAKE_TARGET=$BAKE_TARGET"
-    - cd ./schedmd/slurm/$VERSION/
-    - docker buildx bake --print $BAKE_TARGET
-    - docker buildx bake --progress=plain $BAKE_TARGET
+    - export BAKE_TARGET="all"
+    - export BAKE_IMPORTS="--file docker-bake.hcl --file $VERSION/$FLAVOR/slurm.hcl"
+    - cd ./schedmd/slurm/
+    - docker buildx bake $BAKE_IMPORTS --print $BAKE_TARGET
+    - docker buildx bake $BAKE_IMPORTS --progress=plain $BAKE_TARGET
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
-        - schedmd/slurm/$VERSION/docker-bake.hcl
-        - schedmd/slurm/$VERSION/$FLAVOR/*
+        - schedmd/slurm/**
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $VERSION == 'master'
       changes:
-        - schedmd/slurm/$VERSION/docker-bake.hcl
-        - schedmd/slurm/$VERSION/$FLAVOR/*
+        - schedmd/slurm/**
       allow_failure: true
 
 release:
@@ -88,14 +85,13 @@ release:
     - .slurm
     - .slurm-release
   script:
-    - export BAKE_TARGET="$(printf "%s" "$(echo "$FLAVOR" | sed 's/[[:punct:]]//g')")"
-    - echo "BAKE_TARGET=$BAKE_TARGET"
-    - cd ./schedmd/slurm/$VERSION/
-    - docker buildx bake --print $BAKE_TARGET
-    - docker buildx bake --progress=plain $BAKE_TARGET
-    - docker buildx bake --progress=plain --push $BAKE_TARGET
+    - export BAKE_TARGET="all"
+    - export BAKE_IMPORTS="--file docker-bake.hcl --file $VERSION/$FLAVOR/slurm.hcl"
+    - cd ./schedmd/slurm/
+    - docker buildx bake $BAKE_IMPORTS --print $BAKE_TARGET
+    - docker buildx bake $BAKE_IMPORTS --progress=plain $BAKE_TARGET
+    - docker buildx bake $BAKE_IMPORTS --progress=plain --push $BAKE_TARGET
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-        - schedmd/slurm/$VERSION/docker-bake.hcl
-        - schedmd/slurm/$VERSION/$FLAVOR/*
+        - schedmd/slurm/**
