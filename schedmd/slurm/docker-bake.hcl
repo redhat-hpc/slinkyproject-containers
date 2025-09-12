@@ -273,6 +273,78 @@ target "login_pyxis" {
 
 ################################################################################
 
+group "multiarch" {
+  targets = [
+    "core-multiarch",
+  ]
+}
+
+group "core-multiarch" {
+  targets = [
+    "slurmctld_multiarch",
+    "slurmd_multiarch",
+    "slurmdbd_multiarch",
+    "slurmrestd-multiarch",
+    "sackd_multiarch",
+    "login_multiarch",
+  ]
+}
+
+group "all-multiarch" {
+  targets = [
+    "core-multiarch",
+    "extras-multiarch",
+  ]
+}
+
+target "_multiarch" {
+  platforms = [
+    "linux/amd64",
+    "linux/arm64"
+  ]
+}
+
+target "slurmctld_multiarch" {
+  inherits = ["slurmctld", "_multiarch"]
+}
+
+target "slurmd_multiarch" {
+  inherits = ["slurmd", "_multiarch"]
+}
+
+target "slurmdbd_multiarch" {
+  inherits = ["slurmdbd", "_multiarch"]
+}
+
+target "slurmrestd-multiarch" {
+  inherits = ["slurmrestd", "_multiarch"]
+}
+
+target "sackd_multiarch" {
+  inherits = ["sackd", "_multiarch"]
+}
+
+target "login_multiarch" {
+  inherits = ["login", "_multiarch"]
+}
+
+group "extras-multiarch" {
+  targets = [
+    "slurmd_pyxis_multiarch",
+    "login_pyxis_multiarch",
+  ]
+}
+
+target "slurmd_pyxis_multiarch" {
+  inherits = ["slurmd_pyxis", "_multiarch"]
+}
+
+target "login_pyxis_multiarch" {
+  inherits = ["login_pyxis", "_multiarch"]
+}
+
+################################################################################
+
 variable "GIT_REPO" {
   default = "git@gitlab.com:SchedMD/dev/slurm.git"
 }

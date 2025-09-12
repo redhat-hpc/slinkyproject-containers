@@ -11,87 +11,18 @@ workflow:
 stages:
   - build
   - release
-
-default:
-  image: docker:28.1
-  services:
-    - docker:28.1-dind
-  before_script:
-    - docker info
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  - manifest
 
 variables:
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: /certs
   FF_SCRIPT_SECTIONS: true
 
-.slurm:
-  variables:
-    REGISTRY: $CI_REGISTRY_IMAGE
-  parallel:
-    matrix:
-      - VERSION:
-          - master
-          - '25.05'
-          - '24.11'
-          - '24.05'
-        FLAVOR:
-          - rockylinux9
-          - ubuntu24.04
-
-.slurm-release:
-  variables:
-    REGISTRY: $DOCKER_REGISTRY
-  parallel:
-    matrix:
-      - VERSION:
-          - '25.05'
-          - '24.11'
-          - '24.05'
-        FLAVOR:
-          - rockylinux9
-          - ubuntu24.04
-  before_script:
-    - docker info
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - |
-      if [ -z $DOCKER_REGISTRY_PASSWORD ] || [ -z $DOCKER_REGISTRY ] || [ -z $DOCKER_REGISTRY_USER ]; then
-        echo "Runner lacks login info. Either environment variables are not defined, or runner is on an unprotected branch/tag.";
-        exit 1;
-      fi
-    - echo "$DOCKER_REGISTRY_PASSWORD" | docker login $DOCKER_REGISTRY -u $DOCKER_REGISTRY_USER --password-stdin
-
-build:
+.template:
   stage: build
-  extends: .slurm
-  script:
-    - export BAKE_TARGET="all"
-    - export BAKE_IMPORTS="--file docker-bake.hcl --file $VERSION/$FLAVOR/slurm.hcl"
-    - cd ./schedmd/slurm/
-    - docker buildx bake $BAKE_IMPORTS --print $BAKE_TARGET
-    - docker buildx bake $BAKE_IMPORTS --progress=plain $BAKE_TARGET
-  rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-      changes:
-        - schedmd/slurm/**
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $VERSION == 'master'
-      changes:
-        - schedmd/slurm/**
-      allow_failure: true
+  image: docker:latest
+  services:
+    - docker:dind
+  tags:
+    - schedmd-slc
 
-release:
-  stage: release
-  extends:
-    - .slurm
-    - .slurm-release
-  script:
-    - export BAKE_TARGET="all"
-    - export BAKE_IMPORTS="--file docker-bake.hcl --file $VERSION/$FLAVOR/slurm.hcl"
-    - cd ./schedmd/slurm/
-    - docker buildx bake $BAKE_IMPORTS --print $BAKE_TARGET
-    - docker buildx bake $BAKE_IMPORTS --progress=plain $BAKE_TARGET
-    - docker buildx bake $BAKE_IMPORTS --progress=plain --push $BAKE_TARGET
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - schedmd/slurm/**
+include:
+  - local: .gitlab/ci/slurm.yml
