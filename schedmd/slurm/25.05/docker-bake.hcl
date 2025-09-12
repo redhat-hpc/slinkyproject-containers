@@ -254,7 +254,8 @@ target "slurmd_pyxis_rockylinux9" {
     format_tag("${REGISTRY}", "slurmd-pyxis", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
   contexts = {
-    "ghcr.io/slinkyproject/slurmd:25.05-rockylinux9" = "target:slurmd_rockylinux9"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}") = "target:slurmd_rockylinux9"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "rockylinux9", "${SUFFIX}") = "target:slurmd_rockylinux9"
   }
 }
 
@@ -267,8 +268,10 @@ target "login_pyxis_rockylinux9" {
     format_tag("${REGISTRY}", "login-pyxis", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
   contexts = {
-    "ghcr.io/slinkyproject/slurmd:25.05-rockylinux9" = "target:slurmd_rockylinux9"
-    "ghcr.io/slinkyproject/login:25.05-rockylinux9" = "target:login_rockylinux9"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}") = "target:slurmd_rockylinux9"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "rockylinux9", "${SUFFIX}") = "target:slurmd_rockylinux9"
+    format_tag("${REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}") = "target:login_rockylinux9"
+    format_tag("${REGISTRY}", "login", "${slurm_version}", "rockylinux9", "${SUFFIX}") = "target:login_rockylinux9"
   }
 }
 
@@ -371,7 +374,8 @@ target "slurmd_pyxis_ubuntu2404" {
     format_tag("${REGISTRY}", "slurmd-pyxis", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
   contexts = {
-    "ghcr.io/slinkyproject/slurmd:25.05-ubuntu24.04" = "target:slurmd_ubuntu2404"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}") = "target:slurmd_ubuntu2404"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}") = "target:slurmd_ubuntu2404"
   }
 }
 
@@ -384,7 +388,9 @@ target "login_pyxis_ubuntu2404" {
     format_tag("${REGISTRY}", "login-pyxis", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
   contexts = {
-    "ghcr.io/slinkyproject/slurmd:25.05-ubuntu24.04" = "target:slurmd_ubuntu2404"
-    "ghcr.io/slinkyproject/login:25.05-ubuntu24.04" = "target:login_ubuntu2404"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}") = "target:slurmd_ubuntu2404"
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}") = "target:slurmd_ubuntu2404"
+    format_tag("${REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}") = "target:login_ubuntu2404"
+    format_tag("${REGISTRY}", "login", "${slurm_version}", "ubuntu24.04", "${SUFFIX}") = "target:login_ubuntu2404"
   }
 }

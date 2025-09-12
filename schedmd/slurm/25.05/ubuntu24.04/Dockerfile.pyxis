@@ -2,8 +2,10 @@
 # SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
 # SPDX-License-Identifier: Apache-2.0
 
+ARG REGISTRY=ghcr.io/slinkyproject
+
 ################################################################################
-FROM ghcr.io/slinkyproject/slurmd:25.05-ubuntu24.04 AS download
+FROM ${REGISTRY}/slurmd:25.05-ubuntu24.04 AS download
 
 SHELL ["bash", "-c"]
 
@@ -60,7 +62,7 @@ EOR
 # SLURM: slurmd-pyxis
 # BUILD: `docker build --target=slurmd-pyxis -t [<registry>/]slurmd-pyxis:<tag> .`
 ################################################################################
-FROM ghcr.io/slinkyproject/slurmd:25.05-ubuntu24.04 AS slurmd-pyxis
+FROM ${REGISTRY}/slurmd:25.05-ubuntu24.04 AS slurmd-pyxis
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -109,7 +111,7 @@ EOR
 # SLURM: login-pyxis
 # BUILD: `docker build --target=login-pyxis -t [<registry>/]login-pyxis:<tag> .`
 ################################################################################
-FROM ghcr.io/slinkyproject/login:25.05-ubuntu24.04 AS login-pyxis
+FROM ${REGISTRY}/login:25.05-ubuntu24.04 AS login-pyxis
 
 ARG DEBIAN_FRONTEND=noninteractive
 
