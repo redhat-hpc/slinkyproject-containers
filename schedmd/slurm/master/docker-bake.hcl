@@ -3,11 +3,11 @@
 
 ################################################################################
 
-variable "DOCKER_BAKE_REGISTRY" {
+variable "REGISTRY" {
   default = "ghcr.io/slinkyproject"
 }
 
-variable "DOCKER_BAKE_SUFFIX" {}
+variable "SUFFIX" {}
 
 slurm_version = "master"
 
@@ -186,8 +186,8 @@ target "slurmctld_rockylinux9" {
   inherits = ["_slurmctld", "_rockylinux9"]
   target = "slurmctld"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmctld", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmctld", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmctld", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmctld", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
 }
 
@@ -195,8 +195,8 @@ target "slurmd_rockylinux9" {
   inherits = ["_slurmd", "_rockylinux9"]
   target = "slurmd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
 }
 
@@ -204,8 +204,8 @@ target "slurmdbd_rockylinux9" {
   inherits = ["_slurmdbd", "_rockylinux9"]
   target = "slurmdbd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmdbd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmdbd", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
 }
 
@@ -213,8 +213,8 @@ target "slurmrestd_rockylinux9" {
   inherits = ["_slurmrestd", "_rockylinux9"]
   target = "slurmrestd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmrestd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmrestd", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
 }
 
@@ -222,8 +222,8 @@ target "sackd_rockylinux9" {
   inherits = ["_sackd", "_rockylinux9"]
   target = "sackd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "sackd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "sackd", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "sackd", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "sackd", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
 }
 
@@ -231,8 +231,8 @@ target "login_rockylinux9" {
   inherits = ["_login", "_rockylinux9"]
   target = "login"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "login", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
 }
 
@@ -250,8 +250,8 @@ target "slurmd_pyxis_rockylinux9" {
   dockerfile = "Dockerfile.pyxis"
   target = "slurmd-pyxis"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd-pyxis", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd-pyxis", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
   contexts = {
     "ghcr.io/slinkyproject/slurmd:master-rockylinux9" = "target:slurmd_rockylinux9"
@@ -263,8 +263,8 @@ target "login_pyxis_rockylinux9" {
   dockerfile = "Dockerfile.pyxis"
   target = "login-pyxis"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version("${slurm_version}")}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version}", "rockylinux9", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "login-pyxis", "${slurm_version("${slurm_version}")}", "rockylinux9", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "login-pyxis", "${slurm_version}", "rockylinux9", "${SUFFIX}"),
   ]
   contexts = {
     "ghcr.io/slinkyproject/slurmd:master-rockylinux9" = "target:slurmd_rockylinux9"
@@ -303,8 +303,8 @@ target "slurmctld_ubuntu2404" {
   inherits = ["_slurmctld", "_ubuntu2404"]
   target = "slurmctld"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmctld", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmctld", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmctld", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmctld", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
 }
 
@@ -312,8 +312,8 @@ target "slurmd_ubuntu2404" {
   inherits = ["_slurmd", "_ubuntu2404"]
   target = "slurmd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
 }
 
@@ -321,8 +321,8 @@ target "slurmdbd_ubuntu2404" {
   inherits = ["_slurmdbd", "_ubuntu2404"]
   target = "slurmdbd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmdbd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmdbd", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmdbd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
 }
 
@@ -330,8 +330,8 @@ target "slurmrestd_ubuntu2404" {
   inherits = ["_slurmrestd", "_ubuntu2404"]
   target = "slurmrestd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmrestd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmrestd", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmrestd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
 }
 
@@ -339,8 +339,8 @@ target "sackd_ubuntu2404" {
   inherits = ["_sackd", "_ubuntu2404"]
   target = "sackd"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "sackd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "sackd", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "sackd", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "sackd", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
 }
 
@@ -348,8 +348,8 @@ target "login_ubuntu2404" {
   inherits = ["_login", "_ubuntu2404"]
   target = "login"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "login", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "login", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
 }
 
@@ -367,8 +367,8 @@ target "slurmd_pyxis_ubuntu2404" {
   dockerfile = "Dockerfile.pyxis"
   target = "slurmd-pyxis"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "slurmd-pyxis", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd-pyxis", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "slurmd-pyxis", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
   contexts = {
     "ghcr.io/slinkyproject/slurmd:master-ubuntu24.04" = "target:slurmd_ubuntu2404"
@@ -380,8 +380,8 @@ target "login_pyxis_ubuntu2404" {
   dockerfile = "Dockerfile.pyxis"
   target = "login-pyxis"
   tags = [
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
-    format_tag("${DOCKER_BAKE_REGISTRY}", "login-pyxis", "${slurm_version}", "ubuntu24.04", "${DOCKER_BAKE_SUFFIX}"),
+    format_tag("${REGISTRY}", "login-pyxis", "${slurm_version("${slurm_version}")}", "ubuntu24.04", "${SUFFIX}"),
+    format_tag("${REGISTRY}", "login-pyxis", "${slurm_version}", "ubuntu24.04", "${SUFFIX}"),
   ]
   contexts = {
     "ghcr.io/slinkyproject/slurmd:master-ubuntu24.04" = "target:slurmd_ubuntu2404"

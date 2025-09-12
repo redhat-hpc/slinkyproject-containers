@@ -6,7 +6,7 @@ This directory contains methods to build [Slurm] from [SchedMD].
 
 ```bash
 cd $VERSION
-export DOCKER_BAKE_REGISTRY=<REGISTRY_PREFIX>
+export REGISTRY=<REGISTRY_PREFIX>
 docker buildx bake --print
 docker buildx bake
 docker buildx bake --push
