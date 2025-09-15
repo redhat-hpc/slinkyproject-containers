@@ -9,6 +9,7 @@ workflow:
     - if: $CI_COMMIT_REF_PROTECTED == "true"
 
 stages:
+  - check
   - build
   - release
   - manifest
@@ -25,4 +26,5 @@ variables:
     - schedmd-slc
 
 include:
+  - local: .gitlab/ci/check.yml
   - local: .gitlab/ci/slurm.yml
