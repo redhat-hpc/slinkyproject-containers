@@ -26,8 +26,6 @@
       - VERSION: &build-versions
           - master
           - '25.05'
-          - '24.11'
-          - '24.05'
         FLAVOR: &build-flavors
           - rockylinux9
           - ubuntu24.04
@@ -98,8 +96,6 @@ build::manifest:
     matrix:
       - VERSION: &release-versions
           - '25.05'
-          - '24.11'
-          - '24.05'
         FLAVOR: &release-flavors
           - rockylinux9
           - ubuntu24.04

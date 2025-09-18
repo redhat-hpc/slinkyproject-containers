@@ -20,8 +20,6 @@ docker-bake-check:
       - VERSION:
           - master
           - '25.05'
-          - '24.11'
-          - '24.05'
         FLAVOR:
           - rockylinux9
           - ubuntu24.04
