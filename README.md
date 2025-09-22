@@ -6,6 +6,26 @@ OCI artifacts are pushed to public registries:
 
 - [GitHub][github-registry]
 
+## Build Slurm Images
+
+```sh
+export BAKE_IMPORTS="--file ./docker-bake.hcl --file ./$VERSION/$FLAVOR/slurm.hcl"
+cd ./schedmd/slurm/
+docker bake $BAKE_IMPORTS --print
+docker bake $BAKE_IMPORTS
+```
+
+For example, the following will build Slurm 25.05 on Rocky Linux 9.
+
+```sh
+export BAKE_IMPORTS="--file ./docker-bake.hcl --file ./25.05/rockylinux9/slurm.hcl"
+cd ./schedmd/slurm/
+docker bake $BAKE_IMPORTS --print
+docker bake $BAKE_IMPORTS
+```
+
+For additional instructions, see the [build guide][build-guide].
+
 ## Support and Development
 
 Feature requests, code contributions, and bug reports are welcome!
@@ -32,6 +52,7 @@ specific language governing permissions and limitations under the License.
 
 <!-- Links -->
 
+[build-guide]: ./docs/build.md
 [contact-schedmd]: https://www.schedmd.com/slurm-resources/contact-schedmd/
 [github-registry]: https://github.com/orgs/SlinkyProject/packages
 [oci]: https://opencontainers.org/

@@ -2,10 +2,14 @@
 # SPDX-FileCopyrightText: Copyright (C) SchedMD LLC.
 # SPDX-License-Identifier: Apache-2.0
 
+ARG REGISTRY=ghcr.io/slinkyproject
+
 ################################################################################
-FROM ghcr.io/slinkyproject/slurmd:master-rockylinux9 AS download
+FROM ${REGISTRY}/slurmd:master-rockylinux9 AS download
 
 SHELL ["bash", "-c"]
+
+ARG TARGETARCH
 
 USER root
 WORKDIR /tmp/
@@ -22,9 +26,15 @@ ENROOT_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/enroot/releases
 ENROOT_VERSION="${ENROOT_VERSION/#v}"
 PYXIS_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/pyxis/releases/latest | jq -r '.tag_name')"
 PYXIS_VERSION="${PYXIS_VERSION/#v}"
+# Determine ARCH
+ARCH=${TARGETARCH}
+case ${TARGETARCH} in
+amd64) ARCH=x86_64 ;;
+arm64) ARCH=aarch64 ;;
+esac
 # Download
-wget -N https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot-${ENROOT_VERSION}-1.el8.x86_64.rpm
-wget -N https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot+caps-${ENROOT_VERSION}-1.el8.x86_64.rpm
+wget -N https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot-${ENROOT_VERSION}-1.el8.${ARCH}.rpm
+wget -N https://github.com/NVIDIA/enroot/releases/download/v${ENROOT_VERSION}/enroot+caps-${ENROOT_VERSION}-1.el8.${ARCH}.rpm
 wget -N -O /usr/share/bash-completion/completions/enroot https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/bash_completion
 wget -N -P /etc/enroot/hooks.d/ \
   https://raw.githubusercontent.com/NVIDIA/enroot/refs/tags/v${ENROOT_VERSION}/conf/hooks/extra/50-mig-config.sh \
@@ -57,7 +67,7 @@ EOR
 # SLURM: slurmd-pyxis
 # BUILD: `docker build --target=slurmd-pyxis -t [<registry>/]slurmd-pyxis:<tag> .`
 ################################################################################
-FROM ghcr.io/slinkyproject/slurmd:master-rockylinux9 AS slurmd-pyxis
+FROM ${REGISTRY}/slurmd:master-rockylinux9 AS slurmd-pyxis
 
 ARG ENROOT_VERSION
 ENV ENROOT_VERSION="${ENROOT_VERSION}"
@@ -107,7 +117,7 @@ EOR
 # SLURM: login-pyxis
 # BUILD: `docker build --target=login-pyxis -t [<registry>/]login-pyxis:<tag> .`
 ################################################################################
-FROM ghcr.io/slinkyproject/login:master-rockylinux9 AS login-pyxis
+FROM ${REGISTRY}/login:master-rockylinux9 AS login-pyxis
 
 ARG ENROOT_VERSION
 ENV ENROOT_VERSION="${ENROOT_VERSION}"
