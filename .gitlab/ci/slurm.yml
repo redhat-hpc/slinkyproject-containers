@@ -120,6 +120,8 @@ release::slurm:
 release::manifest:
   extends: .release::slurm
   stage: manifest
+  variables:
+    REGISTRY: $DOCKER_REGISTRY
   tags:
     - schedmd-slc
   parallel:
