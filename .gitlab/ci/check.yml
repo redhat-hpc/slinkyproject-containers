@@ -29,5 +29,5 @@ docker-bake-check:
     - docker bake $BAKE_IMPORTS --progress=plain --check extras
   rules:
     - changes:
-        - schedmd/slurm/**
+        - schedmd/slurm/**/*
       allow_failure: true # https://github.com/docker/buildx/issues/3343
