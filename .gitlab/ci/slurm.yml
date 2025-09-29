@@ -39,11 +39,11 @@
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $VERSION == 'master'
       changes:
-        - schedmd/slurm/**
+        - schedmd/slurm/**/*
       allow_failure: true
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
-        - schedmd/slurm/**
+        - schedmd/slurm/**/*
 
 build::slurm:
   extends: .build::slurm
@@ -109,7 +109,7 @@ build::manifest:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-        - schedmd/slurm/**
+        - schedmd/slurm/**/*
         - .gitlab-ci.yml
         - .gitlab/ci/**/*.yml
 
