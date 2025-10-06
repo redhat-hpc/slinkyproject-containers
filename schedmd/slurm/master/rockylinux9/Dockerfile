@@ -42,18 +42,14 @@ WORKDIR /tmp/
 
 COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
-COPY patches/ patches/
-
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
 RUN <<EOR
-# Patch and Build Slurm
+# Build Slurm
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
 dnf -q config-manager --enable crb
 dnf -q -y upgrade --refresh
-## Patch
-find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d ${SLURM_DIR} -i
 ## Build
 SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+(-[[:alnum:]]+)?" | head -n1 | sed -E 's/-[[:digit:]]+$//g')"
 if [ "${SLURM_DIR}" != "$SLURM_RPM_DIR" ]; then

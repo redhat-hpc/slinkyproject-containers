@@ -44,18 +44,14 @@ WORKDIR /tmp/
 
 COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
-COPY patches/ patches/
-
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
 RUN <<EOR
-# Patch and Build Slurm
+# Build Slurm
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y upgrade
 apt-get -qq -y install --no-install-recommends \
   build-essential fakeroot devscripts equivs
-## Patch
-find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d ${SLURM_DIR} -i
 ## Build
 mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' ${SLURM_DIR}/debian/control
 ( cd ${SLURM_DIR} && debuild -b -uc -us >/dev/null )
