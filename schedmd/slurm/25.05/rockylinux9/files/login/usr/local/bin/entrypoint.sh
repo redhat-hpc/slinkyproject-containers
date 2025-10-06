@@ -20,6 +20,6 @@ function main() {
 
 	ssh-keygen -A
 
-	exec supervisord -c /etc/supervisor/supervisord.conf
+	exec supervisord -c /etc/supervisord.conf
 }
 main

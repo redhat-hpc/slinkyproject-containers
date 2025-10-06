@@ -10,6 +10,6 @@ export SLURMCTLD_OPTIONS="${SLURMCTLD_OPTIONS:-} $*"
 function main() {
 	mkdir -p /run/slurmctld/
 
-	exec supervisord -c /etc/supervisor/supervisord.conf
+	exec supervisord -c /etc/supervisord.conf
 }
 main

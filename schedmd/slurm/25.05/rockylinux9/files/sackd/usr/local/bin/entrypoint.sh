@@ -10,6 +10,6 @@ export SACKD_OPTIONS="${SACKD_OPTIONS:-} $*"
 function main() {
 	mkdir -p /run/slurm/
 
-	exec supervisord -c /etc/supervisor/supervisord.conf
+	exec supervisord -c /etc/supervisord.conf
 }
 main

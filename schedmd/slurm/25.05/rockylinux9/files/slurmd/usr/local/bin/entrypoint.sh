@@ -114,6 +114,6 @@ function main() {
 		addConfItem "MemSpecLimit=${memSpecLimit}"
 	fi
 
-	exec supervisord -c /etc/supervisor/supervisord.conf
+	exec supervisord -c /etc/supervisord.conf
 }
 main
