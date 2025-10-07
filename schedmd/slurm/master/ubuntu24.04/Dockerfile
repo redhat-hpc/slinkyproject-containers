@@ -136,6 +136,7 @@ RUN <<EOR
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
+  socat \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -170,7 +171,7 @@ RUN <<EOR
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
-  gawk \
+  gawk socat \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -190,8 +191,10 @@ EOR
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
 COPY \
   files/etc/supervisor/conf.d/slurmd.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
   files/etc/supervisor/conf.d/eventwatcher.conf \
   /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/slurmd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6818/tcp
@@ -284,6 +287,7 @@ RUN <<EOR
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
+  socat \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \
@@ -294,8 +298,10 @@ EOR
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
 COPY \
   files/etc/supervisor/conf.d/sackd.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
   files/etc/supervisor/conf.d/eventwatcher.conf \
   /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/sackd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["entrypoint.sh"]
@@ -316,6 +322,7 @@ RUN <<EOR
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
+  socat \
   openssh-server \
   dbus-daemon \
   oddjob-mkhomedir \
@@ -331,11 +338,13 @@ COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
 COPY \
   files/etc/supervisor/conf.d/dbus.conf \
   files/etc/supervisor/conf.d/eventwatcher.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
   files/etc/supervisor/conf.d/oddjobd.conf \
   files/etc/supervisor/conf.d/sackd.conf \
   files/etc/supervisor/conf.d/sshd.conf \
   files/etc/supervisor/conf.d/sssd.conf \
   /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/login-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 22/tcp

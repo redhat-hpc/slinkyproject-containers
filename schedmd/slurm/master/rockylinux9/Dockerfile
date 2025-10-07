@@ -154,6 +154,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
+  socat \
   ./slurm-slurmctld-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
 rm *.rpm && dnf clean all
@@ -162,8 +163,10 @@ EOR
 COPY files/etc/supervisord.conf /etc/
 COPY \
   files/etc/supervisord.d/slurmctld.ini \
+  files/etc/supervisord.d/fakesystemd.ini \
   files/etc/supervisord.d/eventwatcher.ini \
   /etc/supervisord.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/slurmctld-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6817/tcp
@@ -182,7 +185,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
-  gawk \
+  gawk socat \
   ./slurm-devel-[0-9]*.rpm \
   ./slurm-libpmi-[0-9]*.rpm \
   ./slurm-pam_slurm-[0-9]*.rpm \
@@ -199,8 +202,10 @@ EOR
 COPY files/etc/supervisord.conf /etc/
 COPY \
   files/etc/supervisord.d/slurmd.ini \
+  files/etc/supervisord.d/fakesystemd.ini \
   files/etc/supervisord.d/eventwatcher.ini \
   /etc/supervisord.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/slurmd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6818/tcp
@@ -281,6 +286,7 @@ RUN <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
+  socat \
   ./slurm-sackd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
 rm *.rpm && dnf clean all
@@ -291,8 +297,10 @@ EOR
 COPY files/etc/supervisord.conf /etc/
 COPY \
   files/etc/supervisord.d/sackd.ini \
+  files/etc/supervisord.d/fakesystemd.ini \
   files/etc/supervisord.d/eventwatcher.ini \
   /etc/supervisord.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/sackd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["entrypoint.sh"]
@@ -310,6 +318,7 @@ RUN <<EOR
 # Install Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
+  socat \
   openssh-server \
   dbus-daemon \
   oddjob-mkhomedir \
@@ -325,11 +334,13 @@ COPY files/etc/supervisord.conf /etc/
 COPY \
   files/etc/supervisord.d/dbus.ini \
   files/etc/supervisord.d/eventwatcher.ini \
+  files/etc/supervisord.d/fakesystemd.ini \
   files/etc/supervisord.d/oddjobd.ini \
   files/etc/supervisord.d/sackd.ini \
   files/etc/supervisord.d/sshd.ini \
   files/etc/supervisord.d/sssd.ini \
   /etc/supervisord.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/login-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 22/tcp
