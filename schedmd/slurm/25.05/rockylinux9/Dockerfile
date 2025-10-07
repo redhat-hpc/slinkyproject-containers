@@ -162,9 +162,12 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm && dnf clean all
 EOR
 
-COPY files/slurmctld/etc/supervisord.conf /etc/
-COPY files/slurmctld/etc/supervisord.d/* /etc/supervisord.d/
-COPY files/slurmctld/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisord.conf /etc/
+COPY \
+  files/etc/supervisord.d/slurmctld.ini \
+  files/etc/supervisord.d/eventwatcher.ini \
+  /etc/supervisord.d/
+COPY files/usr/local/bin/slurmctld-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6817/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -196,9 +199,12 @@ sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 EOR
 
-COPY files/slurmd/etc/supervisord.conf /etc/
-COPY files/slurmd/etc/supervisord.d/* /etc/supervisord.d/
-COPY files/slurmd/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisord.conf /etc/
+COPY \
+  files/etc/supervisord.d/slurmd.ini \
+  files/etc/supervisord.d/eventwatcher.ini \
+  /etc/supervisord.d/
+COPY files/usr/local/bin/slurmd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -288,9 +294,12 @@ rm *.rpm && dnf clean all
 mkdir -p /run/slurm/
 EOR
 
-COPY files/sackd/etc/supervisord.conf /etc/
-COPY files/sackd/etc/supervisord.d/* /etc/supervisord.d/
-COPY files/sackd/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisord.conf /etc/
+COPY \
+  files/etc/supervisord.d/sackd.ini \
+  files/etc/supervisord.d/eventwatcher.ini \
+  /etc/supervisord.d/
+COPY files/usr/local/bin/sackd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["entrypoint.sh"]
 
@@ -318,9 +327,16 @@ authselect select sssd with-mkhomedir --force
 rm -f /etc/ssh/ssh_host_*
 EOR
 
-COPY files/login/etc/supervisord.conf /etc/
-COPY files/login/etc/supervisord.d/* /etc/supervisord.d/
-COPY files/login/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisord.conf /etc/
+COPY \
+  files/etc/supervisord.d/dbus.ini \
+  files/etc/supervisord.d/eventwatcher.ini \
+  files/etc/supervisord.d/oddjobd.ini \
+  files/etc/supervisord.d/sackd.ini \
+  files/etc/supervisord.d/sshd.ini \
+  files/etc/supervisord.d/sssd.ini \
+  /etc/supervisord.d/
+COPY files/usr/local/bin/login-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 22/tcp
 ENTRYPOINT ["entrypoint.sh"]

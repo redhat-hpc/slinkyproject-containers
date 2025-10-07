@@ -144,9 +144,12 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-COPY files/slurmctld/etc/supervisor/supervisord.conf /etc/supervisor/
-COPY files/slurmctld/etc/supervisor/conf.d/* /etc/supervisor/conf.d/
-COPY files/slurmctld/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/slurmctld.conf \
+  files/etc/supervisor/conf.d/eventwatcher.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/slurmctld-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6817/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -184,9 +187,12 @@ sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 EOR
 
-COPY files/slurmd/etc/supervisor/supervisord.conf /etc/supervisor/
-COPY files/slurmd/etc/supervisor/conf.d/* /etc/supervisor/conf.d/
-COPY files/slurmd/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/slurmd.conf \
+  files/etc/supervisor/conf.d/eventwatcher.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/slurmd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
@@ -285,9 +291,12 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-COPY files/sackd/etc/supervisor/supervisord.conf /etc/supervisor/
-COPY files/sackd/etc/supervisor/conf.d/* /etc/supervisor/conf.d/
-COPY files/sackd/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/sackd.conf \
+  files/etc/supervisor/conf.d/eventwatcher.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/sackd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["entrypoint.sh"]
 
@@ -318,9 +327,16 @@ authselect select sssd with-mkhomedir --force
 rm -f /etc/ssh/ssh_host_*
 EOR
 
-COPY files/login/etc/supervisor/supervisord.conf /etc/supervisor/
-COPY files/login/etc/supervisor/conf.d/* /etc/supervisor/conf.d/
-COPY files/login/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/dbus.conf \
+  files/etc/supervisor/conf.d/eventwatcher.conf \
+  files/etc/supervisor/conf.d/oddjobd.conf \
+  files/etc/supervisor/conf.d/sackd.conf \
+  files/etc/supervisor/conf.d/sshd.conf \
+  files/etc/supervisor/conf.d/sssd.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/login-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 22/tcp
 ENTRYPOINT ["entrypoint.sh"]
