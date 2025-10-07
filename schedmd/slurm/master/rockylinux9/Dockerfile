@@ -290,9 +290,6 @@ set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-sackd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
-# For: Helm Chart
-dnf -q -y install --setopt='install_weak_deps=False' \
-  rsync gettext iputils
 rm *.rpm && dnf clean all
 # Prepare Directories
 mkdir -p /run/slurm/
