@@ -121,9 +121,6 @@ apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
-# SLURM: slurmctld
-# BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
-################################################################################
 FROM base AS slurmctld
 
 SHELL ["bash", "-c"]
@@ -153,9 +150,6 @@ COPY files/slurmctld/usr/local/bin/* /usr/local/bin/
 EXPOSE 6817/tcp
 ENTRYPOINT ["entrypoint.sh"]
 
-################################################################################
-# SLURM: slurmd
-# BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base-extra AS slurmd
 
@@ -196,9 +190,6 @@ EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
 
 ################################################################################
-# SLURM: slurmdbd
-# BUILD: `docker build --target=slurmdbd -t [<registry>/]slurmdbd:<tag> .`
-################################################################################
 FROM base AS slurmdbd
 
 SHELL ["bash", "-c"]
@@ -223,9 +214,6 @@ EOR
 EXPOSE 6819/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmdbd", "-D"]
 
-################################################################################
-# SLURM: slurmrestd
-# BUILD: `docker build --target=slurmrestd -t [<registry>/]slurmrestd:<tag> .`
 ################################################################################
 FROM base AS slurmrestd
 
@@ -252,9 +240,6 @@ EXPOSE 6820/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmrestd"]
 CMD ["0.0.0.0:6820"]
 
-################################################################################
-# SLURM: sackd
-# BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
 FROM base-extra AS sackd
 
@@ -303,9 +288,6 @@ COPY files/sackd/usr/local/bin/* /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
 
-################################################################################
-# NAME : login
-# BUILD: `docker build --target=login -t [<registry>/]login:<tag> .`
 ################################################################################
 FROM sackd AS login
 

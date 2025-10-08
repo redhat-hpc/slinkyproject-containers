@@ -64,9 +64,6 @@ make rpm
 EOR
 
 ################################################################################
-# SLURM: slurmd-pyxis
-# BUILD: `docker build --target=slurmd-pyxis -t [<registry>/]slurmd-pyxis:<tag> .`
-################################################################################
 FROM ${REGISTRY}/slurmd:master-rockylinux9 AS slurmd-pyxis
 
 ARG ENROOT_VERSION
@@ -114,9 +111,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 dnf clean all
 EOR
 
-################################################################################
-# SLURM: login-pyxis
-# BUILD: `docker build --target=login-pyxis -t [<registry>/]login-pyxis:<tag> .`
 ################################################################################
 FROM ${REGISTRY}/login:master-rockylinux9 AS login-pyxis
 

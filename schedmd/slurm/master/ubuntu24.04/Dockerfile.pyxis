@@ -60,9 +60,6 @@ make deb
 EOR
 
 ################################################################################
-# SLURM: slurmd-pyxis
-# BUILD: `docker build --target=slurmd-pyxis -t [<registry>/]slurmd-pyxis:<tag> .`
-################################################################################
 FROM ${REGISTRY}/slurmd:master-ubuntu24.04 AS slurmd-pyxis
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -109,9 +106,6 @@ apt-get -qq -y install --no-install-recommends \
 rm *.gpgkey && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-################################################################################
-# SLURM: login-pyxis
-# BUILD: `docker build --target=login-pyxis -t [<registry>/]login-pyxis:<tag> .`
 ################################################################################
 FROM ${REGISTRY}/login:master-ubuntu24.04 AS login-pyxis
 
