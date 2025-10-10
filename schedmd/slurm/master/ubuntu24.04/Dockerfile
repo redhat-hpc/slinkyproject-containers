@@ -19,10 +19,11 @@ WORKDIR /workspace/
 
 ADD https://github.com/SchedMD/slurm/archive/${SLURM_TAR}.tar.gz ${SLURM_VERSION}.tar.gz
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked <<EOR
 # Unpack Slurm Source
 set -xeuo pipefail
-apk add --no-cache tar
+apk upgrade -q --update-cache
+apk add -q tar
 mkdir -p ${SLURM_DIR}
 tar --strip-components=1 -zxvf ${SLURM_TAR}.tar.gz -C ${SLURM_DIR}
 rm ${SLURM_TAR}.tar.gz
@@ -45,7 +46,8 @@ WORKDIR /tmp/
 COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Build Slurm
 set -xeuo pipefail
 apt-get -qq update
@@ -55,8 +57,6 @@ apt-get -qq -y install --no-install-recommends \
 ## Build
 mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' ${SLURM_DIR}/debian/control
 ( cd ${SLURM_DIR} && debuild -b -uc -us >/dev/null )
-## Cleanup
-apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
@@ -93,7 +93,8 @@ EOR
 
 COPY --from=build /tmp/*.deb /tmp/
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Dependencies
 set -xeuo pipefail
 apt-get -qq update
@@ -101,7 +102,6 @@ apt-get -qq -y upgrade
 # Init System
 apt-get -qq -y install --no-install-recommends \
   supervisor tini
-apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
@@ -111,13 +111,13 @@ SHELL ["bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Extra Packages
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   openmpi-bin
-apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
@@ -131,7 +131,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -142,7 +143,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmctld_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 EOR
 
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
@@ -165,7 +166,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -179,7 +181,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-libpmi2-0_[0-9]*.deb \
   ./slurm-smd-slurmd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 # Configure
 mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
@@ -209,7 +211,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -217,7 +220,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmdbd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 EOR
 
 EXPOSE 6819/tcp
@@ -234,7 +237,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -242,7 +246,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmrestd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 EOR
 
 EXPOSE 6820/tcp
@@ -262,7 +266,8 @@ WORKDIR /tmp/
 ADD https://dl.k8s.io/release/stable.txt kubernetes_stable.txt
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install kubectl
 set -xeuo pipefail
 apt-get -qq update
@@ -276,11 +281,12 @@ echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 chmod 644 /etc/apt/sources.list.d/kubernetes.list
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends kubectl
-rm *.txt && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.txt
 EOR
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -290,7 +296,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 EOR
 
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
@@ -314,7 +320,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -324,7 +331,7 @@ apt-get -qq -y install --no-install-recommends \
   dbus-daemon \
   oddjob-mkhomedir \
   authselect sssd sssd-ad sssd-ldap sssd-dbus libpam-sss libnss-sss
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 # Configure
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force

@@ -15,13 +15,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 USER root
 WORKDIR /tmp/
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Download Latest Versions
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   ca-certificates wget jq
-apt-get clean && rm -rf /var/lib/apt/lists/*
 # Determine Latest Versions
 ENROOT_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/enroot/releases/latest | jq -r '.tag_name')"
 ENROOT_VERSION="${ENROOT_VERSION/#v}"
@@ -42,7 +42,8 @@ EOR
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-deb-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Generate Pyxis DEB
 set -xeuo pipefail
 apt-get -qq update
@@ -51,7 +52,6 @@ apt-get -qq -y install --no-install-recommends \
   git gcc make libcap2-bin libtool automake libmd-dev \
   fakeroot devscripts equivs \
   tar
-apt-get clean && rm -rf /var/lib/apt/lists/*
 mkdir pyxis
 tar -zxvf pyxis.tar.gz -C pyxis --strip-components=1
 cd pyxis
@@ -70,7 +70,8 @@ COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-co
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-deb-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Pyxis+Enroot
 set -xeuo pipefail
 apt-get -qq update
@@ -80,7 +81,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   bash-completion \
   fuse-overlayfs pigz squashfuse \
   ./*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 # Configure
 mkdir -m 777 -p /usr/share/enroot/enroot-data/
 mkdir -m 755 -p /run/enroot/
@@ -95,7 +96,8 @@ ADD https://nvidia.github.io/libnvidia-container/gpgkey libnvidia-container.gpgk
 ADD https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
 # Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-apt-ubuntu-debian
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Nvidia Container Toolkit
 set -xeuo pipefail
 gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg ./libnvidia-container.gpgkey
@@ -103,7 +105,7 @@ sed -i 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolk
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   nvidia-container-toolkit
-rm *.gpgkey && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.gpgkey
 EOR
 
 ################################################################################
@@ -117,7 +119,8 @@ COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-co
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-deb-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Pyxis+Enroot
 set -xeuo pipefail
 apt-get -qq update
@@ -127,7 +130,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   bash-completion \
   fuse-overlayfs pigz squashfuse \
   ./*.deb
-rm *.deb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb
 # Configure
 mkdir -m 777 -p /usr/share/enroot/enroot-data/
 mkdir -m 755 -p /run/enroot/
@@ -142,7 +145,8 @@ ADD https://nvidia.github.io/libnvidia-container/gpgkey libnvidia-container.gpgk
 ADD https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
 # Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-apt-ubuntu-debian
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Nvidia Container Toolkit
 set -xeuo pipefail
 gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg ./libnvidia-container.gpgkey
@@ -150,5 +154,5 @@ sed -i 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolk
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   nvidia-container-toolkit
-rm *.gpgkey && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.gpgkey
 EOR

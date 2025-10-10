@@ -14,13 +14,12 @@ ARG TARGETARCH
 USER root
 WORKDIR /tmp/
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Download Latest Versions
 set -xeuo pipefail
 dnf -q -y update
 dnf -q -y install --setopt='install_weak_deps=False' \
   ca-certificates wget jq
-dnf clean all
 # Determine Latest Versions
 ENROOT_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/enroot/releases/latest | jq -r '.tag_name')"
 ENROOT_VERSION="${ENROOT_VERSION/#v}"
@@ -47,7 +46,7 @@ EOR
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-rpm-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Generate Pyxis RPM
 set -xeuo pipefail
 dnf -q -y update
@@ -56,7 +55,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   git gcc make libcap libtool automake libmd-devel \
   rpm-build 'dnf-command(builddep)' \
   tar
-dnf clean all
 mkdir pyxis
 tar -zxvf pyxis.tar.gz -C pyxis --strip-components=1
 cd pyxis
@@ -79,7 +77,7 @@ COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-co
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-rpm-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Pyxis+Enroot
 set -xeuo pipefail
 rm -f *.src.rpm
@@ -89,7 +87,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   bash-completion \
   fuse-overlayfs pigz squashfuse \
   ./*.rpm
-rm *.rpm && dnf clean all
+rm *.rpm
 # Configure
 mkdir -m 777 -p /usr/share/enroot/enroot-data/
 mkdir -m 755 -p /run/enroot/
@@ -103,12 +101,11 @@ EOR
 ADD https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo /etc/yum.repos.d/nvidia-container-toolkit.repo
 
 # Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-dnf-rhel-centos-fedora-amazon-linux
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Nvidia Container Toolkit
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   nvidia-container-toolkit
-dnf clean all
 EOR
 
 ################################################################################
@@ -127,7 +124,7 @@ COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-co
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-rpm-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Pyxis+Enroot
 set -xeuo pipefail
 rm -f *.src.rpm
@@ -137,7 +134,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   bash-completion \
   fuse-overlayfs pigz squashfuse \
   ./*.rpm
-rm *.rpm && dnf clean all
+rm *.rpm
 # Configure
 mkdir -m 777 -p /usr/share/enroot/enroot-data/
 mkdir -m 755 -p /run/enroot/
@@ -151,10 +148,9 @@ EOR
 ADD https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo /etc/yum.repos.d/nvidia-container-toolkit.repo
 
 # Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-dnf-rhel-centos-fedora-amazon-linux
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Nvidia Container Toolkit
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   nvidia-container-toolkit
-dnf clean all
 EOR

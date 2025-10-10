@@ -19,10 +19,11 @@ WORKDIR /workspace/
 
 ADD https://download.schedmd.com/slurm/${SLURM_TAR}.tar.bz2 ${SLURM_TAR}.tar.bz2
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked <<EOR
 # Unpack Slurm Source
 set -xeuo pipefail
-apk add --no-cache tar
+apk upgrade -q --update-cache
+apk add -q tar
 mkdir -p ${SLURM_DIR}
 tar --strip-components=1 -jxvf ${SLURM_TAR}.tar.bz2 -C ${SLURM_DIR}
 rm ${SLURM_TAR}.tar.bz2
@@ -43,13 +44,13 @@ WORKDIR /tmp/
 COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#rpmbuild
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Build Slurm
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
 dnf -q config-manager --enable crb
-dnf -q -y upgrade --refresh
+dnf -q -y upgrade
 ## Build
 SLURM_RPM_DIR="$(rpmspec -q ${SLURM_DIR}/slurm.spec 2> /dev/null | grep -Eo "slurm-[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+(-[[:alnum:]]+)?" | head -n1 | sed -E 's/-[[:digit:]]+$//g')"
 if [ "${SLURM_DIR}" != "$SLURM_RPM_DIR" ]; then
@@ -78,8 +79,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 dnf -q -y install --setopt='install_weak_deps=False' \
   hdf5-devel
 rpmbuild -ta --with slurmrestd --with jwt ${SLURM_RPM_DIR}.tar.bz2 >/dev/null
-## Cleanup
-dnf clean all
 EOR
 
 ################################################################################
@@ -114,21 +113,20 @@ EOR
 
 COPY --from=build /root/rpmbuild/RPMS/**/*.rpm /tmp/
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Dependencies
 set -xeuo pipefail
 # For: Slurm RPM Dependencies
 dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
-dnf -q -y upgrade --refresh
+dnf -q -y upgrade
 # Miscellaneous
 dnf -q -y install --setopt='install_weak_deps=False' \
   ncurses
 # Init System
 dnf -q -y install --setopt='install_weak_deps=False' \
   supervisor tini
-dnf clean all
 EOR
 
 ################################################################################
@@ -136,12 +134,11 @@ FROM base AS base-extra
 
 SHELL ["bash", "-c"]
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Extra Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   openmpi
-dnf clean all
 EOR
 
 ################################################################################
@@ -153,14 +150,14 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   socat \
   ./slurm-slurmctld-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
-rm *.rpm && dnf clean all
+rm *.rpm
 EOR
 
 COPY files/etc/supervisord.conf /etc/
@@ -183,7 +180,7 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
@@ -193,7 +190,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-pam_slurm-[0-9]*.rpm \
   ./slurm-slurmd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
-rm *.rpm && dnf clean all
+rm *.rpm
 # Configure
 mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
@@ -221,13 +218,13 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmdbd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
-rm *.rpm && dnf clean all
+rm *.rpm
 EOR
 
 EXPOSE 6819/tcp
@@ -242,13 +239,13 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   ./slurm-slurmrestd-[0-9]*.rpm \
   ./slurm-[0-9]*.rpm
-rm *.rpm && dnf clean all
+rm *.rpm
 EOR
 
 EXPOSE 6820/tcp
@@ -266,7 +263,7 @@ WORKDIR /tmp/
 ADD https://dl.k8s.io/release/stable.txt kubernetes_stable.txt
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install kubectl
 set -xeuo pipefail
 VERSION="$(cat kubernetes_stable.txt | grep -Eo '^v[0-9]+\.[0-9]+')"
@@ -279,11 +276,11 @@ gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/${VERSION}/rpm/repodata/repomd.xml.key
 EOF
 dnf -q -y install --setopt='install_weak_deps=False' kubectl
-rm *.txt && dnf clean all
+rm *.txt
 EOR
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
@@ -293,7 +290,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 # For: Helm Chart
 dnf -q -y install --setopt='install_weak_deps=False' \
   rsync gettext iputils
-rm *.rpm && dnf clean all
+rm *.rpm
 # Prepare Directories
 mkdir -p /run/slurm/
 EOR
@@ -317,7 +314,7 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Install Packages
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
@@ -326,7 +323,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   dbus-daemon \
   oddjob-mkhomedir \
   authselect sssd sssd-ad sssd-ldap sssd-dbus
-rm *.rpm && dnf clean all
 # Configure
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force
