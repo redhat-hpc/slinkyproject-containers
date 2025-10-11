@@ -145,7 +145,6 @@ function manifest::create() {
 	! "$OPT_PUSH" && cmd+=("--dry-run")
 	log::info "${cmd[*]}"
 	eval "${cmd[*]}"
-
 }
 
 function manifest::inspect() {
@@ -161,6 +160,7 @@ function manifest::inspect() {
 	if "$OPT_PUSH"; then
 		log::info "${cmd[*]}"
 		eval "${cmd[*]}"
+		echo ""
 	fi
 }
 
