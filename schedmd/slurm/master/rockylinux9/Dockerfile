@@ -118,12 +118,12 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   'dnf-command(config-manager)' epel-release
 dnf config-manager --enable crb
 dnf -q -y upgrade
-# Miscellaneous
-dnf -q -y install --setopt='install_weak_deps=False' \
-  ncurses
 # Init System
 dnf -q -y install --setopt='install_weak_deps=False' \
   supervisor tini
+# Debug
+dnf -q -y install --setopt='install_weak_deps=False' \
+  procps-ng iputils ncurses
 EOR
 
 ################################################################################
