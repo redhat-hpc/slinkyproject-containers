@@ -19,10 +19,11 @@ WORKDIR /workspace/
 
 ADD https://download.schedmd.com/slurm/${SLURM_TAR}.tar.bz2 ${SLURM_TAR}.tar.bz2
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked <<EOR
 # Unpack Slurm Source
 set -xeuo pipefail
-apk add --no-cache tar
+apk upgrade -q --update-cache
+apk add -q tar
 mkdir -p ${SLURM_DIR}
 tar --strip-components=1 -jxvf ${SLURM_TAR}.tar.bz2 -C ${SLURM_DIR}
 rm ${SLURM_TAR}.tar.bz2
@@ -44,23 +45,18 @@ WORKDIR /tmp/
 
 COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
-COPY patches/ patches/
-
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
-RUN <<EOR
-# Patch and Build Slurm
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
+# Build Slurm
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y upgrade
 apt-get -qq -y install --no-install-recommends \
   build-essential fakeroot devscripts equivs
-## Patch
-find $(pwd)/patches/ -type f -name "*.patch" -print0 | sort -z | xargs -t0r -n1 patch -p1 -d ${SLURM_DIR} -i
 ## Build
 mk-build-deps -ir --tool='apt-get -qq -y -o Debug::pkgProblemResolver=yes --no-install-recommends' ${SLURM_DIR}/debian/control
 ( cd ${SLURM_DIR} && debuild -b -uc -us >/dev/null )
-## Cleanup
-apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
@@ -98,7 +94,8 @@ EOR
 COPY --from=build /tmp/*.deb /tmp/
 COPY --from=build /tmp/*.ddeb /tmp/
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Dependencies
 set -xeuo pipefail
 apt-get -qq update
@@ -106,7 +103,9 @@ apt-get -qq -y upgrade
 # Init System
 apt-get -qq -y install --no-install-recommends \
   supervisor tini
-apt-get clean && rm -rf /var/lib/apt/lists/*
+# Debug
+apt-get -qq -y install --no-install-recommends \
+  procps iputils-ping ncurses-bin
 EOR
 
 ################################################################################
@@ -116,18 +115,15 @@ SHELL ["bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Extra Packages
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   openmpi-bin
-apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
-################################################################################
-# SLURM: slurmctld
-# BUILD: `docker build --target=slurmctld -t [<registry>/]slurmctld:<tag> .`
 ################################################################################
 FROM base AS slurmctld
 
@@ -139,11 +135,13 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
+  socat \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-dev_[0-9]*.deb \
@@ -152,18 +150,20 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-slurmctld-dbgsym_[0-9]*.ddeb \
   ./slurm-smd_[0-9]*.deb \
   ./slurm-smd-dbgsym_[0-9]*.ddeb
-rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb && rm *.ddeb
 EOR
 
-COPY files/slurmctld/etc/supervisor/* /etc/supervisor/
-COPY files/slurmctld/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/slurmctld.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
+COPY files/usr/local/bin/slurmctld-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6817/tcp
 ENTRYPOINT ["entrypoint.sh"]
 
-################################################################################
-# SLURM: slurmd
-# BUILD: `docker build --target=slurmd -t [<registry>/]slurmd:<tag> .`
 ################################################################################
 FROM base-extra AS slurmd
 
@@ -175,12 +175,13 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
-  gawk \
+  gawk socat \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-dev_[0-9]*.deb \
@@ -193,7 +194,7 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-slurmd-dbgsym_[0-9]*.ddeb \
   ./slurm-smd_[0-9]*.deb \
   ./slurm-smd-dbgsym_[0-9]*.ddeb
-rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb && rm *.ddeb
 # Configure
 mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
@@ -201,15 +202,17 @@ sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 EOR
 
-COPY files/slurmd/etc/supervisor/* /etc/supervisor/
-COPY files/slurmd/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/slurmd.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
+COPY files/usr/local/bin/slurmd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
 
-################################################################################
-# SLURM: slurmdbd
-# BUILD: `docker build --target=slurmdbd -t [<registry>/]slurmdbd:<tag> .`
 ################################################################################
 FROM base AS slurmdbd
 
@@ -221,7 +224,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -231,15 +235,12 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-slurmdbd-dbgsym_[0-9]*.ddeb \
   ./slurm-smd_[0-9]*.deb \
   ./slurm-smd-dbgsym_[0-9]*.ddeb
-rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb && rm *.ddeb
 EOR
 
 EXPOSE 6819/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmdbd", "-D"]
 
-################################################################################
-# SLURM: slurmrestd
-# BUILD: `docker build --target=slurmrestd -t [<registry>/]slurmrestd:<tag> .`
 ################################################################################
 FROM base AS slurmrestd
 
@@ -251,7 +252,8 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
@@ -261,16 +263,13 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-slurmrestd-dbgsym_[0-9]*.ddeb \
   ./slurm-smd_[0-9]*.deb \
   ./slurm-smd-dbgsym_[0-9]*.ddeb
-rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb && rm *.ddeb
 EOR
 
 EXPOSE 6820/tcp
 ENTRYPOINT ["tini", "-g", "--", "slurmrestd"]
 CMD ["0.0.0.0:6820"]
 
-################################################################################
-# SLURM: sackd
-# BUILD: `docker build --target=sackd -t [<registry>/]sackd:<tag> .`
 ################################################################################
 FROM base-extra AS sackd
 
@@ -284,7 +283,8 @@ WORKDIR /tmp/
 ADD https://dl.k8s.io/release/stable.txt kubernetes_stable.txt
 
 # Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install kubectl
 set -xeuo pipefail
 apt-get -qq update
@@ -298,15 +298,17 @@ echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 chmod 644 /etc/apt/sources.list.d/kubernetes.list
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends kubectl
-rm *.txt && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.txt
 EOR
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Slurm Packages
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
+  socat \
   ./slurm-smd-client_[0-9]*.deb \
   ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-doc_[0-9]*.deb \
@@ -317,19 +319,21 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
 # For: Helm Chart
 apt-get -qq -y install --no-install-recommends \
   rsync gettext-base iputils-ping
-rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
+rm *.deb && rm *.ddeb
 # Prepare Directories
 mkdir -p /run/slurm/
 EOR
 
-COPY files/sackd/etc/supervisor/* /etc/supervisor/
-COPY files/sackd/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/sackd.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
+COPY files/usr/local/bin/sackd-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["entrypoint.sh"]
 
-################################################################################
-# NAME : login
-# BUILD: `docker build --target=login -t [<registry>/]login:<tag> .`
 ################################################################################
 FROM sackd AS login
 
@@ -341,24 +345,34 @@ USER root
 WORKDIR /tmp/
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#pkg_install
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Packages
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
+  socat \
   openssh-server \
   dbus-daemon \
   oddjob-mkhomedir \
   authselect sssd sssd-ad sssd-ldap sssd-dbus libpam-sss libnss-sss
-rm *.deb && rm *.ddeb && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Configure
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force
 rm -f /etc/ssh/ssh_host_*
 EOR
 
-COPY files/login/etc/supervisor/* /etc/supervisor/
-COPY files/login/usr/local/bin/* /usr/local/bin/
+COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
+COPY \
+  files/etc/supervisor/conf.d/dbus.conf \
+  files/etc/supervisor/conf.d/fakesystemd.conf \
+  files/etc/supervisor/conf.d/oddjobd.conf \
+  files/etc/supervisor/conf.d/sackd.conf \
+  files/etc/supervisor/conf.d/sshd.conf \
+  files/etc/supervisor/conf.d/sssd.conf \
+  /etc/supervisor/conf.d/
+COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
+COPY files/usr/local/bin/login-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 22/tcp
 ENTRYPOINT ["entrypoint.sh"]

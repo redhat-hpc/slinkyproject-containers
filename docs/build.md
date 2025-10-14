@@ -47,6 +47,15 @@ docker bake $BAKE_IMPORTS --print
 docker bake $BAKE_IMPORTS
 ```
 
+Environment variables can be set to modify the build behavior or artifacts:
+
+| Environment Variable | Build Type | Description                                              |
+| -------------------- | :--------: | -------------------------------------------------------- |
+| REGISTRY             |    Any     | Specify the registry to tag the images with.             |
+| SUFFIX               |    Any     | Specify a suffix to append to the image tags.            |
+| GIT_REPO             |    Dev     | Specify the git repository to clone Slurm from.          |
+| GIT_BRANCH           |    Dev     | Specify the git branch to switch to after cloning Slurm. |
+
 ### With Custom Registry
 
 Build Slurm from the selected Slurm version and Linux flavor.

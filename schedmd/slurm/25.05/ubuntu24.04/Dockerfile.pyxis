@@ -15,13 +15,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 USER root
 WORKDIR /tmp/
 
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Download Latest Versions
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
   ca-certificates wget jq
-apt-get clean && rm -rf /var/lib/apt/lists/*
 # Determine Latest Versions
 ENROOT_VERSION="$(wget -qO - https://api.github.com/repos/NVIDIA/enroot/releases/latest | jq -r '.tag_name')"
 ENROOT_VERSION="${ENROOT_VERSION/#v}"
@@ -42,7 +42,8 @@ EOR
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-deb-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Generate Pyxis DEB
 set -xeuo pipefail
 apt-get -qq update
@@ -51,7 +52,6 @@ apt-get -qq -y install --no-install-recommends \
   git gcc make libcap2-bin libtool automake libmd-dev \
   fakeroot devscripts equivs \
   tar
-apt-get clean && rm -rf /var/lib/apt/lists/*
 mkdir pyxis
 tar -zxvf pyxis.tar.gz -C pyxis --strip-components=1
 cd pyxis
@@ -59,9 +59,6 @@ make orig
 make deb
 EOR
 
-################################################################################
-# SLURM: slurmd-pyxis
-# BUILD: `docker build --target=slurmd-pyxis -t [<registry>/]slurmd-pyxis:<tag> .`
 ################################################################################
 FROM ${REGISTRY}/slurmd:25.05-ubuntu24.04 AS slurmd-pyxis
 
@@ -73,7 +70,8 @@ COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-co
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-deb-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Pyxis+Enroot
 set -xeuo pipefail
 apt-get -qq update
@@ -98,7 +96,8 @@ ADD https://nvidia.github.io/libnvidia-container/gpgkey libnvidia-container.gpgk
 ADD https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
 # Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-apt-ubuntu-debian
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Nvidia Container Toolkit
 set -xeuo pipefail
 gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg ./libnvidia-container.gpgkey
@@ -110,9 +109,6 @@ rm *.gpgkey && apt-get clean && rm -rf /var/lib/apt/lists/*
 EOR
 
 ################################################################################
-# SLURM: login-pyxis
-# BUILD: `docker build --target=login-pyxis -t [<registry>/]login-pyxis:<tag> .`
-################################################################################
 FROM ${REGISTRY}/login:25.05-ubuntu24.04 AS login-pyxis
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -123,7 +119,8 @@ COPY --from=download /usr/share/bash-completion/completions/* /usr/share/bash-co
 
 # Ref: https://github.com/NVIDIA/pyxis?tab=readme-ov-file#with-a-deb-package
 # Ref: https://github.com/NVIDIA/enroot/blob/master/doc/installation.md
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Pyxis+Enroot
 set -xeuo pipefail
 apt-get -qq update
@@ -148,7 +145,8 @@ ADD https://nvidia.github.io/libnvidia-container/gpgkey libnvidia-container.gpgk
 ADD https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
 # Ref: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#with-apt-ubuntu-debian
-RUN <<EOR
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Install Nvidia Container Toolkit
 set -xeuo pipefail
 gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg ./libnvidia-container.gpgkey
