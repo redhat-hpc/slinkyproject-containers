@@ -300,6 +300,8 @@ apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-sackd_[0-9]*.deb \
   ./slurm-smd_[0-9]*.deb
 rm *.deb
+# Prepare Directories
+mkdir -p /run/slurm/
 EOR
 
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
