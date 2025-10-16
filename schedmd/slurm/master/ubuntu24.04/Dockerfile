@@ -334,7 +334,6 @@ apt-get -qq -y install --no-install-recommends \
   dbus-daemon \
   oddjob-mkhomedir \
   authselect sssd sssd-ad sssd-ldap sssd-dbus libpam-sss libnss-sss
-rm *.deb
 # Configure
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force
