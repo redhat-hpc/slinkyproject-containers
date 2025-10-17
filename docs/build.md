@@ -119,7 +119,9 @@ architectures.
 Install host dependencies.
 
 ```sh
+# RPM (e.g. RHEL, CentOS, Rocky Linux, Alma Linux)
 sudo dnf install -y qemu-user-binfmt qemu-user-static
+# DEB (e.g. Debian, Ubuntu)
 sudo apt-get install -y binfmt-support qemu-user-static
 ```
 
