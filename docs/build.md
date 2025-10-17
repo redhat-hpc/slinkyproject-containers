@@ -152,13 +152,6 @@ docker bake $BAKE_IMPORTS --builder multiarch multiarch
 
 ### Multiple Native Nodes
 
-Create a docker builder for multiple architectures:
-
-```sh
-docker buildx create --name multiarch --bootstrap
-docker buildx inspect multiarch
-```
-
 The following command creates a multi-node builder from Docker contexts named
 node-amd64 and node-arm64. This example assumes that you've already added those
 contexts.
