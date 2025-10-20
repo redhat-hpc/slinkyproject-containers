@@ -119,7 +119,9 @@ architectures.
 Install host dependencies.
 
 ```sh
+# RPM (e.g. RHEL, CentOS, Rocky Linux, Alma Linux)
 sudo dnf install -y qemu-user-binfmt qemu-user-static
+# DEB (e.g. Debian, Ubuntu)
 sudo apt-get install -y binfmt-support qemu-user-static
 ```
 
@@ -151,13 +153,6 @@ docker bake $BAKE_IMPORTS --builder multiarch multiarch
 > on a native architecture.
 
 ### Multiple Native Nodes
-
-Create a docker builder for multiple architectures:
-
-```sh
-docker buildx create --name multiarch --bootstrap
-docker buildx inspect multiarch
-```
 
 The following command creates a multi-node builder from Docker contexts named
 node-amd64 and node-arm64. This example assumes that you've already added those

@@ -91,7 +91,7 @@ for user in $(ls /home/); do
 done
 EOR
 
-COPY --from=build /tmp/*.deb /tmp/
+COPY --from=build /tmp/*.deb /tmp/*.ddeb /tmp/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
@@ -142,11 +142,14 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   socat \
   ./slurm-smd-client_[0-9]*.deb \
+  ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmctld_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb
+  ./slurm-smd-slurmctld-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb
 EOR
 
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
@@ -177,14 +180,18 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   gawk socat \
   ./slurm-smd-client_[0-9]*.deb \
+  ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-dev_[0-9]*.deb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-libnss-slurm_[0-9]*.deb \
+  ./slurm-smd-libnss-slurm-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-libpam-slurm-adopt_[0-9]*.deb \
   ./slurm-smd-libpmi2-0_[0-9]*.deb \
   ./slurm-smd-slurmd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb
+  ./slurm-smd-slurmd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb
 # Configure
 mkdir -p /var/spool/slurmd/
 cp -v /etc/nsswitch.conf{,.bak}
@@ -222,8 +229,10 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmdbd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb
+  ./slurm-smd-slurmdbd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb
 EOR
 
 EXPOSE 6819/tcp
@@ -248,8 +257,10 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-slurmrestd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb
+  ./slurm-smd-slurmrestd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb
 EOR
 
 EXPOSE 6820/tcp
@@ -296,10 +307,15 @@ apt-get -qq update
 apt-get -qq -y install --no-install-recommends --fix-broken \
   socat \
   ./slurm-smd-client_[0-9]*.deb \
+  ./slurm-smd-client-dbgsym_[0-9]*.ddeb \
   ./slurm-smd-doc_[0-9]*.deb \
   ./slurm-smd-sackd_[0-9]*.deb \
-  ./slurm-smd_[0-9]*.deb
-rm *.deb
+  ./slurm-smd-sackd-dbgsym_[0-9]*.ddeb \
+  ./slurm-smd_[0-9]*.deb \
+  ./slurm-smd-dbgsym_[0-9]*.ddeb
+rm *.deb && rm *.ddeb
+# Prepare Directories
+mkdir -p /run/slurm/
 EOR
 
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
@@ -334,7 +350,6 @@ apt-get -qq -y install --no-install-recommends \
   dbus-daemon \
   oddjob-mkhomedir \
   authselect sssd sssd-ad sssd-ldap sssd-dbus libpam-sss libnss-sss
-rm *.deb
 # Configure
 mkdir -p /etc/authselect
 authselect select sssd with-mkhomedir --force

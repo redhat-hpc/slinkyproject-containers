@@ -91,8 +91,7 @@ for user in $(ls /home/); do
 done
 EOR
 
-COPY --from=build /tmp/*.deb /tmp/
-COPY --from=build /tmp/*.ddeb /tmp/
+COPY --from=build /tmp/*.deb /tmp/*.ddeb /tmp/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
