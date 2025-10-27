@@ -170,6 +170,13 @@ group "core" {
   ]
 }
 
+group "cuda" {
+  targets = [
+    "core",
+    "slurmd-cuda",
+  ]
+}
+
 target "slurmctld" {
   inherits = ["_slurmctld"]
   context = context
@@ -187,6 +194,16 @@ target "slurmd" {
   tags = [
     format_tag(REGISTRY, "slurmd", slurm_version(slurm_version), linux_flavor, SUFFIX),
     format_tag(REGISTRY, "slurmd", slurm_version, linux_flavor, SUFFIX),
+  ]
+}
+
+target "slurmd-cuda" {
+  inherits = ["_slurmd"]
+  context = context
+  target = "slurmd-cuda"
+  tags = [
+    format_tag(REGISTRY, "slurmd-cuda", slurm_version(slurm_version), linux_flavor, SUFFIX),
+    format_tag(REGISTRY, "slurmd-cuda", slurm_version, linux_flavor, SUFFIX),
   ]
 }
 

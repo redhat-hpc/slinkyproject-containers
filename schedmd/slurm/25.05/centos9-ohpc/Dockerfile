@@ -213,6 +213,38 @@ EXPOSE 6818/tcp
 ENTRYPOINT ["entrypoint.sh"]
 
 ################################################################################
+FROM slurmd AS slurmd-cuda
+
+RUN <<EOR bash -l
+# Install CUDA from Spack
+set -xeuo pipefail
+
+module load spack
+spack install \
+  cuda target=x86_64_v3 \
+  cudnn target=x86_64_v3
+EOR
+
+RUN <<EOR bash -l
+# Install NCCL from Spack
+set -xeuo pipefail
+
+module load spack
+spack install \
+  nccl cuda_arch=75 target=x86_64_v3 \
+  nccl-tests cuda_arch=75 arch=x86_64_v3
+EOR
+
+RUN <<EOR bash -l
+# Install PyTorch from Spack
+set -xeuo pipefail
+
+module load spack
+spack install py-torch target=x86_64_v3
+spack module lmod refresh -y
+EOR
+
+################################################################################
 FROM base AS slurmdbd
 
 SHELL ["bash", "-c"]
