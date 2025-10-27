@@ -3,7 +3,7 @@ name: Build OpenHPC-based Slurm images
 env:
   REGISTRY: quay.io/slinky-on-openshift
   PARENT_IMAGE: quay.io/centos/centos:stream9
-  BAKE_TARGET: core
+  BAKE_TARGET: cuda
   BAKE_IMPORTS: --file docker-bake.hcl --file 25.05/centos9-ohpc/slurm.hcl
 
 on:
