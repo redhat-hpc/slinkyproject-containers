@@ -29,7 +29,7 @@ jobs:
           remove-browsers: true
           verbose: true
 
-      - name: Build base image
+      - name: Build images with docker buildx
         run: |
           cd ./schedmd/slurm
           docker buildx bake ${{ env.BAKE_IMPORTS }} --print ${{ env.BAKE_TARGET }}
