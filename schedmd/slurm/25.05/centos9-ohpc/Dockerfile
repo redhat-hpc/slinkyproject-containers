@@ -24,8 +24,10 @@ RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 # Build Slurm
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
-  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' epel-release
-dnf -q config-manager --enable crb
+  '@Development' rpm-build 'dnf-command(builddep)' 'dnf-command(config-manager)' https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+dnf -q config-manager --enable crb || dnf -q config-manager --enable codeready-builder-for-rhel-9-*
+dnf -q config-manager --disable *source*,*debug*,*eus* || true
+
 rpm -ivh --nodeps http://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm
 dnf -q -y upgrade
 ## Build
