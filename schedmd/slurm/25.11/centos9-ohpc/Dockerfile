@@ -190,6 +190,7 @@ RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   gawk socat \
+  authselect \
   ./slurm-devel-ohpc-[0-9]*.rpm \
   ./slurm-libpmi-ohpc-[0-9]*.rpm \
   ./slurm-pam_slurm-ohpc-[0-9]*.rpm \
