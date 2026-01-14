@@ -3,6 +3,5 @@
 
 ################################################################################
 
-slurm_version = "25.11.5"
-slurm_version_micro = "1"
+slurm_version = "25.11.1"
 linux_flavor = "rockylinux9"

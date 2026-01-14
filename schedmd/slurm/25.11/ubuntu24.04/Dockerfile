@@ -5,7 +5,6 @@
 ################################################################################
 
 ARG SLURM_VERSION=25.11-latest
-ARG SLURM_VERSION_MICRO=1
 ARG SLURM_DIR=slurm
 ARG PARENT_IMAGE=ubuntu:24.04
 
@@ -13,20 +12,22 @@ ARG PARENT_IMAGE=ubuntu:24.04
 FROM alpine:latest AS slurm-src
 
 ARG SLURM_VERSION
-ARG SLURM_VERSION_MICRO
 ARG SLURM_DIR
-ARG SLURM_TAR="slurm-${SLURM_VERSION//./-}-${SLURM_VERSION_MICRO}.tar.gz"
+ARG SLURM_TAR="slurm-${SLURM_VERSION}"
 
 WORKDIR /workspace/
 
-RUN apk add -q --no-cache tar
+ADD https://download.schedmd.com/slurm/${SLURM_TAR}.tar.bz2 ${SLURM_TAR}.tar.bz2
 
-ADD https://github.com/SchedMD/slurm/archive/refs/tags/${SLURM_TAR} ${SLURM_TAR}
-
-RUN \
-  mkdir -p ${SLURM_DIR} && \
-  tar --strip-components=1 -zxvf ${SLURM_TAR} -C ${SLURM_DIR} && \
-  rm ${SLURM_TAR}
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked <<EOR
+# Unpack Slurm Source
+set -xeuo pipefail
+apk upgrade -q --update-cache
+apk add -q tar
+mkdir -p ${SLURM_DIR}
+tar --strip-components=1 -jxvf ${SLURM_TAR}.tar.bz2 -C ${SLURM_DIR}
+rm ${SLURM_TAR}.tar.bz2
+EOR
 
 ################################################################################
 FROM ${PARENT_IMAGE} AS build
@@ -42,16 +43,6 @@ ARG SLURM_DIR
 USER root
 WORKDIR /tmp/
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
-# Pre-Build Slurm
-set -xeuo pipefail
-apt-get -qq update
-apt-get -qq -y upgrade
-apt-get -qq -y install --no-install-recommends \
-  build-essential apt-utils fakeroot devscripts equivs
-EOR
-
 COPY --from=slurm-src /workspace/${SLURM_DIR} ${SLURM_DIR}
 
 # Ref: https://slurm.schedmd.com/quickstart_admin.html#debuild
@@ -59,6 +50,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked <<EOR
 # Build Slurm
 set -xeuo pipefail
+apt-get -qq update
+apt-get -qq -y upgrade
+apt-get -qq -y install --no-install-recommends \
+  build-essential fakeroot devscripts equivs
+## Build
 mk-build-deps -ir --tool='apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends' ${SLURM_DIR}/debian/control >/dev/null
 ( cd ${SLURM_DIR} && debuild -b -uc -us >/dev/null )
 EOR
@@ -159,9 +155,7 @@ EOR
 COPY files/etc/supervisor/supervisord.conf /etc/supervisor/
 COPY \
   files/etc/supervisor/conf.d/slurmctld.conf \
-  files/etc/supervisor/conf.d/fakesystemd.conf \
   /etc/supervisor/conf.d/
-COPY files/usr/local/bin/fakesystemd.sh /usr/local/bin/
 COPY files/usr/local/bin/slurmctld-entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 6817/tcp
