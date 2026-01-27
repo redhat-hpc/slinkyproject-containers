@@ -190,7 +190,8 @@ RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
 set -xeuo pipefail
 dnf -q -y install --setopt='install_weak_deps=False' \
   gawk socat \
-  authselect \
+  openssh-server \
+  authselect sssd sssd-ad sssd-ldap \
   ./slurm-devel-ohpc-[0-9]*.rpm \
   ./slurm-libpmi-ohpc-[0-9]*.rpm \
   ./slurm-pam_slurm-ohpc-[0-9]*.rpm \
@@ -199,7 +200,6 @@ dnf -q -y install --setopt='install_weak_deps=False' \
 rm *.rpm
 # Configure
 mkdir -p /var/spool/slurmd/
-cp -v /etc/nsswitch.conf{,.bak}
 sed -i -E "s/^passwd:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 sed -i -E "s/^group:[[:space:]]+/&slurm /g" /etc/nsswitch.conf
 mkdir -p /etc/authselect

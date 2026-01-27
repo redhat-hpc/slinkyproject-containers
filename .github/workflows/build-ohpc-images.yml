@@ -3,7 +3,6 @@ name: Build OpenHPC-based Slurm images
 env:
   REGISTRY: quay.io/slinky-on-openshift
   PARENT_IMAGE: quay.io/centos/centos:stream9
-  BAKE_TARGET: cuda
   BAKE_IMPORTS: --file docker-bake.hcl --file ${{ github.event.inputs.version }}/centos9-ohpc/slurm.hcl
 
 on:
@@ -17,6 +16,14 @@ on:
         options:
           - "25.05"
           - "25.11"
+      target:
+        description: "the bake target"
+        required: true
+        type: choice
+        default: "cuda"
+        options:
+          - "cuda"
+          - "core"
   # push:
   #   branches: [ "main" ]
 
@@ -41,5 +48,5 @@ jobs:
       - name: Build images with docker buildx
         run: |
           cd ./schedmd/slurm
-          docker buildx bake ${{ env.BAKE_IMPORTS }} --print ${{ env.BAKE_TARGET }}
-          docker buildx bake ${{ env.BAKE_IMPORTS }} --progress=plain --push ${{ env.BAKE_TARGET }}
+          docker buildx bake ${{ env.BAKE_IMPORTS }} --print ${{ github.event.inputs.version }}
+          docker buildx bake ${{ env.BAKE_IMPORTS }} --progress=plain --push ${{ github.event.inputs.version }}
