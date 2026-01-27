@@ -96,7 +96,7 @@ dnf -q -y install --setopt='install_weak_deps=False' \
   supervisor tini
 # Debug
 dnf -q -y install --setopt='install_weak_deps=False' \
-  procps-ng iputils ncurses
+  procps-ng iputils ncurses passwd
 EOR
 
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
