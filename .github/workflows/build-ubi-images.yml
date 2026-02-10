@@ -47,5 +47,5 @@ jobs:
       - name: Build images with docker
         run: |
           cd ./schedmd/slurm
-          docker bake ${{ env.BAKE_IMPORTS }} --print ${{ github.event.inputs.target }}
-          docker bake ${{ env.BAKE_IMPORTS }} --progress=plain --push ${{ github.event.inputs.target }}
+          docker buildx bake ${{ env.BAKE_IMPORTS }} --print ${{ github.event.inputs.target }}
+          docker buildx bake ${{ env.BAKE_IMPORTS }} --progress=plain --push ${{ github.event.inputs.target }}
