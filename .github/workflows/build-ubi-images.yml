@@ -1,0 +1,51 @@
+name: Build UBI9 Slurm images
+
+env:
+  REGISTRY: quay.io/slinky-on-openshift
+  PARENT_IMAGE: quay.io/centos/centos:stream9
+  BAKE_IMPORTS: --file docker-bake.hcl --file ${{ github.event.inputs.version }}/ubi9/slurm.hcl
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Slurm version to build"
+        required: true
+        type: choice
+        default: "25.11"
+        options:
+          - "25.11"
+      target:
+        description: "Bake target"
+        required: true
+        type: choice
+        default: "cuda"
+        options:
+          - "cuda"
+          - "core"
+  # push:
+  #   branches: [ "main" ]
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to quay.io
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - uses: mathio/gha-cleanup@v1
+        with:
+          remove-browsers: true
+          verbose: true
+
+      - name: Build images with docker
+        run: |
+          cd ./schedmd/slurm
+          docker bake ${{ env.BAKE_IMPORTS }} --print ${{ github.event.inputs.target }}
+          docker bake ${{ env.BAKE_IMPORTS }} --progress=plain --push ${{ github.event.inputs.target }}
