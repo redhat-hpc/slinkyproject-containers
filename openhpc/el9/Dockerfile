@@ -1,0 +1,31 @@
+ARG PARENT_IMAGE=quay.io/centos/centos:stream9
+
+FROM ${PARENT_IMAGE}
+
+RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
+dnf -q -y install http://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm \
+  https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+# required for now: https://github.com/openhpc/ohpc/issues/2347
+curl "http://obs.openhpc.community:82/OpenHPC3:/3.5:/Factory/EL_9/OpenHPC3:3.5:Factory.repo" -o /etc/yum.repos.d/obs.repo
+
+dnf -q -y install --setopt='install_weak_deps=False' \
+  lmod-ohpc gnu12-compilers-ohpc spack-ohpc examples-ohpc \
+  automake-ohpc autoconf-ohpc hwloc-ohpc libtool-ohpc valgrind-ohpc cmake-ohpc \
+  openblas-gnu12-ohpc \
+  pmix-ohpc openmpi4-pmix-gnu12-ohpc omb-gnu12-openmpi4-ohpc boost-gnu12-openmpi4-ohpc lmod-defaults-gnu12-openmpi4-ohpc
+EOR
+
+RUN <<EOR bash -l
+# spack install
+set -xeuo pipefail
+
+module load spack openblas
+
+spack compiler find --scope site
+spack external find --scope site --all
+
+# choosing Haswell-level compatibility (go with v4 for AVX512)
+spack install hpl target=x86_64_v3
+spack module lmod refresh -y
+EOR
