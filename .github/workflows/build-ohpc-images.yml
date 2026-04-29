@@ -4,6 +4,8 @@ env:
   REGISTRY: quay.io/slinky-on-openshift
   PARENT_IMAGE: quay.io/centos/centos:stream9
   BAKE_IMPORTS: --file docker-bake.hcl --file ${{ github.event.inputs.version }}/rockylinux9/slurm.hcl --set *.args.linux_flavor=centos9-ohpc
+  VERSION: ${{ github.event.inputs.version }}
+  FLAVOR: centos9
 
 on:
   workflow_dispatch:
@@ -61,8 +63,6 @@ jobs:
       - name: Build and Push OpenHPC Layer
         run: |
           # Define the tags created by bake (matching your format_tag logic)
-          VERSION="${{ github.event.inputs.version }}"
-          FLAVOR="centos9-ohpc"
 
           # Build on top of slurmd
           docker build
