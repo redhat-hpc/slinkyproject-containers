@@ -170,13 +170,6 @@ group "core" {
   ]
 }
 
-group "cuda" {
-  targets = [
-    "core",
-    "slurmd-cuda",
-  ]
-}
-
 target "slurmctld" {
   inherits = ["_slurmctld"]
   context = context
