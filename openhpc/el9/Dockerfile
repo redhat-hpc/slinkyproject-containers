@@ -3,8 +3,10 @@ ARG PARENT_IMAGE=quay.io/centos/centos:stream9
 FROM ${PARENT_IMAGE}
 
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<EOR
-dnf -q -y install http://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm \
-  https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+set -xeuo pipefail
+
+dnf -q -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+rpm -ivh --nodeps --force http://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm
 
 # required for now: https://github.com/openhpc/ohpc/issues/2347
 curl "http://obs.openhpc.community:82/OpenHPC3:/3.5:/Factory/EL_9/OpenHPC3:3.5:Factory.repo" -o /etc/yum.repos.d/obs.repo
