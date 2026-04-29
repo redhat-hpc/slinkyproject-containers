@@ -62,18 +62,18 @@ jobs:
 
       - name: Build and Push OpenHPC Layer
         run: |
-          # Define the tags created by bake (matching your format_tag logic)
-
           # Build on top of slurmd
-          docker build
+          docker buildx build \
+            --platform linux/amd64 \
             --build-arg BASE_IMAGE=${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR}-ohpc \
-            -f openhpc/el9/Dockerfile \
-            --push .
+            -f schedmd/slurm/openhpc/el9/Dockerfile \
+            --push ./schedmd/slurm
 
           # Build on top of login
-          docker build
+          docker buildx build \
+            --platform linux/amd64 \
             --build-arg BASE_IMAGE=${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR}-ohpc \
-            -f openhpc/el9/Dockerfile \
-            --push .
+            -f schedmd/slurm/openhpc/el9/Dockerfile \
+            --push ./schedmd/slurm
