@@ -16,14 +16,14 @@ on:
         options:
           - "25.05"
           - "25.11"
-      target:
-        description: "the bake target"
-        required: true
-        type: choice
-        default: "cuda"
-        options:
-          - "cuda"
-          - "core"
+      # target:
+      #   description: "the bake target"
+      #   required: true
+      #   type: choice
+      #   default: "cuda"
+      #   options:
+      #     - "cuda"
+      #     - "core"
   # push:
   #   branches: [ "main" ]
 
@@ -46,14 +46,33 @@ jobs:
           verbose: true
 
       - name: Patch HCL flavor
-        # We target the specific file based on the input version
         run: |
           FILE_PATH="schedmd/slurm/${{ github.event.inputs.version }}/rockylinux9/slurm.hcl"
           echo "Patching $FILE_PATH..."
-          sed -i 's/linux_flavor = "rockylinux9"/linux_flavor = "centos9-ohpc"/g' "$FILE_PATH"
+          sed -i 's/linux_flavor = "rockylinux9"/linux_flavor = "centos9"/g' "$FILE_PATH"
 
       - name: Build images with docker buildx
         run: |
           cd ./schedmd/slurm
-          docker buildx bake ${{ env.BAKE_IMPORTS }} --print ${{ github.event.inputs.target }}
-          docker buildx bake ${{ env.BAKE_IMPORTS }} --progress=plain --push ${{ github.event.inputs.target }}
+          docker buildx bake ${{ env.BAKE_IMPORTS }} --print core
+          docker buildx bake ${{ env.BAKE_IMPORTS }} --progress=plain --push core
+
+      - name: Build and Push OpenHPC Layer
+        run: |
+          # Define the tags created by bake (matching your format_tag logic)
+          VERSION="${{ github.event.inputs.version }}"
+          FLAVOR="centos9-ohpc"
+
+          # Build on top of slurmd
+          docker build
+            --build-arg BASE_IMAGE=${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR} \
+            -t ${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR}-ohpc \
+            -f openhpc/el9/Dockerfile \
+            --push .
+
+          # Build on top of login
+          docker build
+            --build-arg BASE_IMAGE=${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR} \
+            -t ${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR}-ohpc \
+            -f openhpc/el9/Dockerfile \
+            --push .
