@@ -3,7 +3,7 @@ name: Build OpenHPC-based Slurm images
 env:
   REGISTRY: quay.io/slinky-on-openshift
   PARENT_IMAGE: quay.io/centos/centos:stream9
-  BAKE_IMPORTS: --file docker-bake.hcl --file ${{ github.event.inputs.version }}/centos9-ohpc/slurm.hcl
+  BAKE_IMPORTS: --file docker-bake.hcl --file ${{ github.event.inputs.version }}/rockylinux9/slurm.hcl --set *.args.linux_flavor=centos9-ohpc
 
 on:
   workflow_dispatch:
@@ -44,6 +44,13 @@ jobs:
         with:
           remove-browsers: true
           verbose: true
+
+      - name: Patch HCL flavor
+        # We target the specific file based on the input version
+        run: |
+          FILE_PATH="schedmd/slurm/${{ github.event.inputs.version }}/rockylinux9/slurm.hcl"
+          echo "Patching $FILE_PATH..."
+          sed -i 's/linux_flavor = "rockylinux9"/linux_flavor = "centos9-ohpc"/g' "$FILE_PATH"
 
       - name: Build images with docker buildx
         run: |
