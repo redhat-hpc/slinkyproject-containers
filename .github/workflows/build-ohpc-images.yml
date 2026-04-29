@@ -50,6 +50,7 @@ jobs:
           FILE_PATH="schedmd/slurm/${{ github.event.inputs.version }}/rockylinux9/slurm.hcl"
           echo "Patching $FILE_PATH..."
           sed -i 's/linux_flavor = "rockylinux9"/linux_flavor = "centos9"/g' "$FILE_PATH"
+          echo 'context = "${slurm_dir}/rockylinux9"' >> "$FILE_PATH"
 
       - name: Build images with docker buildx
         run: |
