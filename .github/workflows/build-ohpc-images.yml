@@ -65,13 +65,13 @@ jobs:
           # Build on top of slurmd
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg BASE_IMAGE=${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR} \
+            --build-arg PARENT_IMAGE=${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR}-ohpc \
             --push ./openhpc/el9
 
           # Build on top of login
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg BASE_IMAGE=${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR} \
+            --build-arg PARENT_IMAGE=${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR}-ohpc \
             --push ./openhpc/el9
