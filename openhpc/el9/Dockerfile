@@ -13,10 +13,14 @@ curl "http://obs.openhpc.community:82/OpenHPC3:/3.5:/Factory/EL_9/OpenHPC3:3.5:F
 
 dnf -q -y install --setopt='install_weak_deps=False' \
   lmod-ohpc gnu12-compilers-ohpc spack-ohpc examples-ohpc \
-  automake-ohpc autoconf-ohpc hwloc-ohpc libtool-ohpc valgrind-ohpc cmake-ohpc \
+  hwloc-ohpc libtool-ohpc cmake-ohpc \
   openblas-gnu12-ohpc \
-  pmix-ohpc openmpi4-pmix-gnu12-ohpc omb-gnu12-openmpi4-ohpc boost-gnu12-openmpi4-ohpc lmod-defaults-gnu12-openmpi4-ohpc
+  pmix-ohpc openmpi4-pmix-gnu12-ohpc omb-gnu12-openmpi4-ohpc boost-gnu12-openmpi4-ohpc lmod-defaults-gnu12-openmpi4-ohpc \
+  make autoconf perl-File-Compare perl-File-Copy \
+  yq vim-enhanced
 EOR
+
+COPY fix-spack-packages.sh /usr/local/libexec
 
 RUN <<EOR bash -l
 # spack install
@@ -27,7 +31,10 @@ module load spack openblas
 spack compiler find --scope site
 spack external find --scope site --all
 
+chmod +x /usr/local/libexec/fix-spack-packages.sh
+/usr/local/libexec/fix-spack-packages.sh
+
 # choosing Haswell-level compatibility (go with v4 for AVX512)
-spack install hpl target=x86_64_v3
+spack install hpl target=x86_64
 spack module lmod refresh -y
 EOR
