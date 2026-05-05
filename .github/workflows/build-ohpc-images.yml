@@ -68,7 +68,7 @@ jobs:
             --build-arg BASE_IMAGE=${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR}-ohpc \
             -f Dockerfile \
-            --push ./schedmd/slurm/openhpc/el9
+            --push ./openhpc/el9
 
           # Build on top of login
           docker buildx build \
@@ -76,4 +76,4 @@ jobs:
             --build-arg BASE_IMAGE=${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR}-ohpc \
             -f Dockerfile \
-            --push ./schedmd/slurm/openhpc/el9
+            --push ./openhpc/el9
