@@ -67,7 +67,6 @@ jobs:
             --platform linux/amd64 \
             --build-arg BASE_IMAGE=${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/slurmd:${VERSION}-${FLAVOR}-ohpc \
-            -f Dockerfile \
             --push ./openhpc/el9
 
           # Build on top of login
@@ -75,5 +74,4 @@ jobs:
             --platform linux/amd64 \
             --build-arg BASE_IMAGE=${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR} \
             -t ${{ env.REGISTRY }}/login:${VERSION}-${FLAVOR}-ohpc \
-            -f Dockerfile \
             --push ./openhpc/el9
